@@ -1,5 +1,27 @@
-# 1.0.0
+# v1.0.0（2026/10/25）
 
-首个公开版本。头顶名牌、Tab 玩家列表、聊天栏三处显示段位，段位可选择显示在名字前或名字后；八个模式各有图标，段位分 `HT1` ~ `HT5` 与 `LT1` ~ `LT5`，各段位颜色可调。设置界面可用游戏内 `/ylctier` 命令、ESC 暂停菜单「模组」按钮下方的「PVPTIER 设置」按钮或 ModMenu 的「配置」按钮打开，改动先写内存草稿、点「保存」才落盘，另有「取消」「恢复默认」，内容区为原生风格滚动条并支持滚轮。榜单数据来自 pvptier.ylcmc.top（YueLunarCourt 服务器），每次启动自动后台同步一次，失败会说明原因、是否沿用本地数据并给出重试入口，缓存放在游戏 config 目录。支持 1.20.5 ~ 1.21.11（Java 21）与 1.20.1 ~ 1.20.4（Java 17）两个版本范围，零前置，ModMenu 与 Cloth Config 为可选依赖。稳定性方面：聊天栏对服务端拼好的广播与客户端本地拼的普通发言都能正确加标签；消息树为重建而非就地修改，不会触碰 1.21.x 的不可变 siblings 列表；接口偶发返回非 JSON 时自动重试 3 次并回退本地缓存。
+## 新增
 
-The first public release. The tier is shown on nametags, in the tab list and in chat, and in chat it can be placed before or after the name. Every mode has its own icon, tiers range from `HT1` to `HT5` and `LT1` to `LT5`, and every tier colour can be adjusted. The settings screen opens with `/ylctier`, from the "PVPTIER 设置" button below the in-game "Mods" button in the ESC pause menu, or from ModMenu's "Config" button; changes are kept in an in-memory draft and only written on "Save", with "Cancel" and "Reset to defaults" available, and the content area uses a vanilla-style scrollbar with mouse-wheel support. Leaderboard data comes from pvptier.ylcmc.top (the YueLunarCourt server), synced once in the background at every start; if it fails the reason is shown along with whether local data is reused and how to retry, and the cache lives in the game's config folder. Supports 1.20.5 to 1.21.11 (Java 21) and 1.20.1 to 1.20.4 (Java 17), requires no other mods, with ModMenu and Cloth Config as optional dependencies. On stability: chat tagging covers both server-composed broadcasts and client-composed regular chat; the message tree is rebuilt rather than mutated, so the immutable `siblings` list on 1.21.x is never touched; non-JSON responses from the API are retried 3 times with a local-cache fallback.
+- 头顶名牌、Tab 玩家列表、聊天栏三处显示段位
+- 聊天栏的段位可选择显示在名字前或名字后
+- 八个模式各有对应图标，段位分 HT1 ~ HT5 与 LT1 ~ LT5
+- 每个段位的颜色都可以在设置页调整
+- 设置页三个入口：游戏内 `/ylctier` 命令、ESC 暂停菜单「模组」按钮下方的「PVPTIER 设置」按钮、ModMenu 模组列表的「配置」按钮
+- 设置页改动先写内存草稿，只有点「保存」才落盘，另有「取消」与「恢复默认」
+- 可切换优先模式、显示规则与显示位置
+- 榜单每次启动自动后台同步一次，失败时说明原因、是否沿用本地数据，并给出手动重试入口
+- 同时提供 1.20.5 ~ 1.21.11（Java 21）与 1.20.1 ~ 1.20.4（Java 17）两个版本
+- 零前置，ModMenu 与 Cloth Config 为可选依赖
+
+## 修复
+
+- 聊天栏普通发言拿不到段位标签（名字在翻译组件的参数里，原先的查找方式扫不到）
+- 聊天栏段位装饰导致启动崩溃
+- 1.21.x 上因修改不可变消息列表被「协议错误」踢出
+- 1.20.1 ~ 1.20.4（Java 17）构建启动即崩
+- 设置页所有文字不可见（颜色缺 alpha 通道导致全透明）
+- 段位文字与色块可能全透明
+- 设置页滚动改为原生风格滚动条并支持滚轮，去掉上下箭头按钮
+- 段位 LT5 与 LT4 默认颜色重复
+- `fabric.mod.json` 描述转义错误与版本范围说明写错
+- 榜单接口偶发返回非 JSON 时的解析失败（重试 3 次并回退本地缓存）
