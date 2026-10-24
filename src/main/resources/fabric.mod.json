@@ -3,7 +3,7 @@
   "id": "ylctiertagger",
   "version": "${version}",
   "name": "YLCTierTagger",
-  "description": "1.21.11 高版本 服务器 YueLunarCourt 的 专属 PVP 榜单 Tagger 模组\\nThe exclusive PVP leaderboard Tagger mod for the YueLunarCourt server on Minecraft 1.21.11 (a newer version).",
+  "description": "YueLunarCourt 服务器的专属 PVP 榜单 Tagger 模组，支持 Minecraft 1.20.1–1.21.11。The exclusive PVP leaderboard Tagger mod for the YueLunarCourt server, supporting Minecraft 1.20.1–1.21.11.",
   "authors": [
     "天灵"
   ],

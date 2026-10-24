@@ -53,7 +53,7 @@ public class TierConfig {
     public int HT4 = 0x81749a;
     public int LT4 = 0x655b79;
     public int HT5 = 0x8f82a8;
-    public int LT5 = 0x655b79;
+    public int LT5 = 0x4f4560;
 
     public static TierConfig get() {
         return instance;

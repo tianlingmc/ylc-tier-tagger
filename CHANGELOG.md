@@ -2,6 +2,20 @@
 
 本项目的版本号采用 `大版本.小版本.修订号`。
 
+## 1.1.0
+
+- 修复 1.20.1–1.20.4（Java 17）构建启动即崩：mixin 配置里 `compatibilityLevel` 误写成 `JAVA_21`，Java 17 运行时拒绝应用，导致所有混用全部失效；改为 `JAVA_17`，两个版本范围统一可跑
+- 修复聊天栏段位装饰引发的两次启动崩溃：先是用 `@ModifyArg` 配 `@At("HEAD")`（不是合法注入点），后是 `@ModifyVariable` 误用 `argsOnly + index=0`（槽位 0 是 `this` 且不可改）；最终用 `@ModifyVariable` 正确槽位（非静态方法第一个参数在槽位 1）替换消息参数
+- 修正段位 `LT5` 与 `LT4` 默认颜色重复的问题（此前两个档位颜色一样）
+- 修正 `fabric.mod.json` 描述里的转义错误（双反斜杠 `n` 变成了字面反斜杠 n），并更正支持版本范围说明
+- 说明：1.21.11 数据接口偶发返回非 JSON（瞬断或网关），已做 3 次重试与本地缓存兜底，不会因此崩溃或卡启动
+
+- Fixed a startup crash on the 1.20.1–1.20.4 (Java 17) build: the mixin config's `compatibilityLevel` was wrongly `JAVA_21`, which the Java 17 runtime refuses, breaking every mixin; changed to `JAVA_17` so both version ranges run
+- Fixed two startup crashes caused by chat tag decoration: first `@ModifyArg` with `@At("HEAD")` (not a valid injection point), then `@ModifyVariable` with `argsOnly + index=0` (slot 0 is `this` and cannot be modified); now uses `@ModifyVariable` with the correct slot (first parameter of a non-static method is at slot 1) to substitute the message argument
+- Fixed `LT5` sharing the same default colour as `LT4` (two tiers looked identical)
+- Fixed a bad escape in `fabric.mod.json` description (doubled backslash-n rendered as literal text) and corrected the supported-version note
+- Note: the 1.21.11 data API occasionally returns non-JSON (brief outage / gateway); the mod already retries 3 times and falls back to the local cache, so it never crashes or hangs on this
+
 ## 1.0.10
 
 - 修复 1.0.9 引入的混用崩溃：`ChatHudMixin` 的 `@ModifyVariable` 误用了 `argsOnly = true, index = 0`——非静态方法的第一个参数在局部变量槽位 1（`this` 在 0 且不允许改、`argsOnly` 也会把 0 判非法），导致启动期又崩。改回 `index = 1`，在方法入口替换消息参数
