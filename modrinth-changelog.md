@@ -1,3 +1,9 @@
+# 1.0.7
+
+重做设置界面：编辑内存草稿、「保存」才写回配置，新增「取消」「回复默认」；顶部标题导航栏与底部确认脚行；优先模式项与模式选择界面显示各模式图标；内容区可滚动（右侧 ↑/↓）适配小屏。修复聊天栏在开了聊天插件的服务器上不显示段位的问题——改为按玩家名组件定位，不再依赖固定的消息结构。
+
+Reworked the settings screen (in-memory draft, save-only-on-confirm, cancel/reset, title bar, confirmation row, mode icons, scrollable for small windows). Fixed tiers not showing in chat on servers with chat plugins by locating the player-name component instead of relying on a fixed message layout.
+
 # 1.0.6
 
 修复游戏初始化时，选项界面左下角「PVPTIER 榜单设置」按钮的注入方式导致的崩溃。

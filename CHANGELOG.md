@@ -2,6 +2,20 @@
 
 本项目的版本号采用 `大版本.小版本.修订号`。
 
+## 1.0.7
+
+- 重做设置界面：改为编辑内存草稿，「保存」才写回配置；新增「取消」「回复默认」
+- 设置界面新增顶部标题导航栏与底部确认脚行
+- 设置界面「优先模式」项与模式选择界面均显示各模式的图标
+- 设置界面内容区可滚动（右侧 ↑/↓ 按钮），适配窗口偏小的屏幕
+- 修复聊天栏在开了聊天插件的服务器上不显示段位的问题（改为按玩家名组件定位，不再依赖固定的消息结构）
+
+- Reworked the settings screen: it now edits an in-memory draft and only writes to disk on "Save"; added "Cancel" and "Reset to defaults"
+- The settings screen now has a top title bar and a bottom confirmation row
+- The preferred-mode row and the mode picker now show each mode's icon
+- The settings content scrolls (↑/↓ buttons on the right) to fit small windows
+- Fixed tiers not showing in chat on servers running chat plugins (locate the player-name component instead of relying on a fixed message layout)
+
 ## 1.0.6
 
 - 修复游戏初始化时选项界面按钮注入导致的崩溃
