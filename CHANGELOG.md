@@ -2,6 +2,14 @@
 
 本项目的版本号采用 `大版本.小版本.修订号`。
 
+## 1.0.6
+
+- 修复游戏初始化时选项界面按钮注入导致的崩溃
+- 明确榜单数据来自 pvptier.ylcmc.top，与 pvptier.com 无关
+
+- Fixed a crash on startup caused by the options-screen button injection
+- Clarified that the tier data comes from pvptier.ylcmc.top, unrelated to pvptier.com
+
 ## 1.0.0
 
 首个正式版本。

@@ -1,3 +1,11 @@
+# 1.0.6
+
+修复游戏初始化时，选项界面左下角「PVPTIER 榜单设置」按钮的注入方式导致的崩溃。
+数据来源说明：榜单数据来自我们自己的站点 pvptier.ylcmc.top（YueLunarCourt 服务器），与第三方站点 pvptier.com 无关。
+
+Fixed a crash on game startup caused by how the "PVPTIER 榜单设置" button was injected into the options screen.
+Data source note: the tier data comes from our own site pvptier.ylcmc.top (the YueLunarCourt server) and is not related to the third-party site pvptier.com.
+
 # 1.0.0
 
 首个正式版本。
