@@ -116,6 +116,21 @@ public final class TierService {
         return lastError;
     }
 
+    /** 本地数据的时间戳（毫秒），来自最后一次成功拉取或读取缓存。 */
+    public long dataTimestamp() {
+        return lastUpdate;
+    }
+
+    /**
+     * 数据有多旧（分钟）。缓存文件里的时间戳也算。
+     */
+    public long dataAgeMinutes() {
+        if (lastUpdate <= 0L) {
+            return -1L;
+        }
+        return Math.max(0L, (System.currentTimeMillis() - lastUpdate) / 60000L);
+    }
+
     /**
      * 进程启动时调用：先读本地缓存兜底，再强制拉一次最新数据。
      *
@@ -136,12 +151,15 @@ public final class TierService {
             return false;
         }
         status = Status.LOADING;
+        lastError = null;
         executor.submit(() -> {
             try {
                 List<PlayerEntry> fresh = fetchAll();
                 if (fresh == null) {
                     status = Status.FAILED;
-                    lastError = "接口无响应或返回异常";
+                    if (lastError == null) {
+                        lastError = "接口无响应";
+                    }
                     return;
                 }
                 players.clear();
@@ -207,15 +225,16 @@ public final class TierService {
             try {
                 HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
                 if (response.statusCode() != 200) {
-                    throw new IOException("HTTP " + response.statusCode());
+                    throw new IOException("接口返回 HTTP " + response.statusCode());
                 }
                 ApiResponse parsed = GSON.fromJson(response.body(), ApiResponse.class);
                 if (parsed == null || !parsed.ok) {
-                    throw new IOException("接口返回异常");
+                    throw new IOException("接口返回内容不是预期的榜单数据");
                 }
                 return parsed;
             } catch (Exception e) {
-                System.err.println("[ylc-tier-tagger] 请求失败（第 " + attempt + " 次）：" + e.getMessage());
+                lastError = describe(e);
+                System.err.println("[ylc-tier-tagger] 请求失败（第 " + attempt + "/" + HTTP_ATTEMPTS + " 次）：" + lastError);
                 if (attempt < HTTP_ATTEMPTS) {
                     try {
                         Thread.sleep(RETRY_DELAY_MS);
@@ -227,6 +246,28 @@ public final class TierService {
             }
         }
         return null;
+    }
+
+    /** 把异常翻译成人能看懂的原因。 */
+    private static String describe(Exception e) {
+        if (e instanceof java.net.UnknownHostException) {
+            return "域名解析失败，检查网络或 DNS";
+        }
+        if (e instanceof java.net.ConnectException) {
+            return "无法连接 pvptier.ylcmc.top，站点可能离线或网络不通";
+        }
+        if (e instanceof java.net.http.HttpTimeoutException) {
+            return "连接 pvptier.ylcmc.top 超时";
+        }
+        if (e instanceof java.net.SocketTimeoutException) {
+            return "读取榜单数据超时";
+        }
+        if (e instanceof IOException) {
+            String m = e.getMessage();
+            return m == null || m.isEmpty() ? "网络请求失败" : m;
+        }
+        String m = e.getMessage();
+        return m == null || m.isEmpty() ? e.getClass().getSimpleName() : m;
     }
 
     /* ─────────── 本地缓存 ─────────── */

@@ -1,0 +1,36 @@
+{
+  "project_id": "dDefGuBN",
+  "slug": "ylc-tier-tagger",
+  "title": "YLC Tier Tagger",
+  "description": "在游戏内显示 YueLunarCourt PVP 榜单的段位标签。",
+  "body": "## YLC Tier Tagger\n\n给 YueLunarCourt 服务器的 PVP 榜单做的客户端标签模组。\n\n### 功能\n\n- **头顶名牌**显示「模式图标 + 段位」\n- **Tab 玩家列表**显示同样的标签\n- **聊天栏**里提到某个人时，名字后面（或者前面，取决于设置）跟着段位\n- 八个模式：斧、锤、合金、药水、SMP、剑、UHC、水晶\n- 段位分 HT1~HT5 与 LT1~LT5，颜色可以在设置里改\n\n### 设置\n\n游戏内输入 `/ylctier` 打开设置界面。也可以在 **选项** 界面左下角找到「PVPTIER 榜单设置」。\n\n装了 [ModMenu](https://modrinth.com/mod/modmenu) 的话，模组列表里会多一个「配置」按钮；装了 [Cloth Config](https://modrinth.com/mod/cloth-config) 的话还有标准的 `/config` 命令。\n\n### 依赖\n\n**不需要任何前置模组**，只依赖 Fabric Loader。ModMenu 与 Cloth Config 是可选的，装了更方便。\n\n### 支持版本\n\n| 客户端 | 需要的 Java | 下载哪个文件 |\n|---|---|---|\n| 1.20.5 ~ 1.21.11 | Java 21 | `TLCTierTagger-<版本>-fabric.jar` |\n| 1.20.1 ~ 1.20.4 | Java 17 | `TLCTierTagger-<版本>-fabric-mc1.20.4.jar` |\n\n1.20.5 之前 Minecraft 跑在 Java 17 上，字节码不兼容，所以单独提供了一个包。\n\n### 数据\n\n数据来自 PVPTIER 排行榜接口。每次启动游戏会自动同步一次，同步结果缓存在游戏的 `config/ylc-tier-tagger/tier_cache.json` 里；站点临时不可用时会继续使用本地缓存，并在游戏内提示失败原因。\n",
+  "categories": [
+    "decoration",
+    "social",
+    "utilities"
+  ],
+  "client_side": "required",
+  "server_side": "unsupported",
+  "icon": "assets/ylctiertagger/icon.png",
+  "license": "MIT",
+  "source_url": "https://github.com/tianlingmc/ylc-tier-tagger",
+  "issues_url": "https://github.com/tianlingmc/ylc-tier-tagger/issues",
+  "contact": {
+    "homepage": "https://modrinth.com/project/ylc-tier-tagger",
+    "sources": "https://github.com/tianlingmc/ylc-tier-tagger",
+    "issues": "https://github.com/tianlingmc/ylc-tier-tagger/issues"
+  },
+  "donation_urls": {},
+  "dependencies": [
+    {
+      "project_id": "mOgUt4GM",
+      "dependency_type": "optional"
+    },
+    {
+      "project_id": "9s6osm5g",
+      "dependency_type": "optional"
+    }
+  ],
+  "additional_categories": [],
+  "thread": false
+}

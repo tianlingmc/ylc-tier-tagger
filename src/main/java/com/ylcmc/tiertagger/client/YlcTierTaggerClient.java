@@ -8,6 +8,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.toast.SystemToast;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 
 /**
  * 客户端入口：读配置、启动时拉一次排行榜。
@@ -23,12 +24,14 @@ public class YlcTierTaggerClient implements ClientModInitializer {
     /** 每 60 秒检查一次缓存是否过期。 */
     private static final int REFRESH_CHECK_TICKS = 1200;
 
-    /** 进服后最多等这么多 tick 再提示，兜底防止拉取一直挂着不给提示。 */
-    private static final int NOTIFY_WAIT_TICKS = 60;
+    /** 同步超过这么多个 tick（10 秒）还没结果，就先提示一次「正在同步」。 */
+    private static final int LOADING_HINT_TICKS = 200;
 
     private static int tickCounter = 0;
-    private static int ticksSinceJoin = 0;
-    private static boolean notified = false;
+    private static int loadingTicks = 0;
+
+    /** 上一次已经提示过的状态，用来避免重复刷屏。 */
+    private static TierService.Status lastNotified = null;
 
     /** 上一次注册命令时用的网络处理器，换服后需要重新注册。 */
     private static ClientPlayNetworkHandler registeredHandler = null;
@@ -46,24 +49,15 @@ public class YlcTierTaggerClient implements ClientModInitializer {
     public static void onTick(MinecraftClient client) {
         registerCommand(client);
 
+        // 玩家可能在 cloth-config 的界面上改了设置，跟着同步一次
+        TierConfig.reloadIfChanged();
+
         if (client.player == null) {
-            ticksSinceJoin = 0;
-            notified = false;
+            // 还在主菜单，聊天消息发不出去，等进了游戏再提示
             return;
         }
 
-        ticksSinceJoin++;
-
-        // 玩家可能在 cloth-config 的界面上改了设置，跟着同步一次
-        if (ticksSinceJoin % 40 == 0) {
-            TierConfig.reloadIfChanged();
-        }
-
-        // 进游戏后弹一次提示，说明数据状态
-        if (!notified && (SERVICE.status() != TierService.Status.LOADING || ticksSinceJoin > NOTIFY_WAIT_TICKS)) {
-            notified = true;
-            notifyStatus(client);
-        }
+        checkStatus(client);
 
         tickCounter++;
         if (tickCounter < REFRESH_CHECK_TICKS) {
@@ -73,6 +67,32 @@ public class YlcTierTaggerClient implements ClientModInitializer {
         if (SERVICE.isExpired()) {
             SERVICE.refreshAsync();
         }
+    }
+
+    /**
+     * 状态变化就提示玩家。
+     *
+     * <p>同步成功、同步失败都会提示；失败时除了右上角提示，还在聊天栏里发一条，
+     * 免得提示一闪而过看不见。
+     */
+    private static void checkStatus(MinecraftClient client) {
+        TierService.Status status = SERVICE.status();
+
+        if (status == TierService.Status.LOADING) {
+            loadingTicks++;
+            if (loadingTicks == LOADING_HINT_TICKS) {
+                notifyStatus(client, status);
+            }
+            return;
+        }
+
+        if (status == TierService.Status.IDLE || status == lastNotified) {
+            return;
+        }
+
+        lastNotified = status;
+        loadingTicks = 0;
+        notifyStatus(client, status);
     }
 
     /** 客户端命令注册到游戏自带的 dispatcher 上。 */
@@ -89,28 +109,46 @@ public class YlcTierTaggerClient implements ClientModInitializer {
         }
     }
 
-    /** 把当前数据状态弹给玩家看。 */
-    private static void notifyStatus(MinecraftClient client) {
+    /** 把当前数据状态告诉玩家。 */
+    private static void notifyStatus(MinecraftClient client, TierService.Status status) {
         String title = "PVPTIER 榜单";
-        String body;
 
-        switch (SERVICE.status()) {
-            case OK:
-                body = "已加载 " + SERVICE.size() + " 名玩家的段位";
+        switch (status) {
+            case OK: {
+                long age = SERVICE.dataAgeMinutes();
+                String body = "已同步 " + SERVICE.size() + " 名玩家的段位"
+                        + (age > 0 ? "（数据来自 " + age + " 分钟前的缓存）" : "");
+                showToast(client, title, body);
                 break;
-            case FAILED:
-                body = "拉取失败：" + (SERVICE.lastError() == null ? "未知原因" : SERVICE.lastError())
-                        + (SERVICE.hasData() ? "（正在使用本地缓存）" : "");
+            }
+            case FAILED: {
+                String reason = SERVICE.lastError() == null ? "未知原因" : SERVICE.lastError();
+                showToast(client, title, "同步失败：" + reason);
+                chat(client, Text.literal("[PVPTIER] 排行榜同步失败：" + reason)
+                        .copy().styled(s -> s.withColor(Formatting.RED)));
+                chat(client, Text.literal("  " + cacheHint())
+                        .copy().styled(s -> s.withColor(Formatting.GRAY)));
                 break;
+            }
             case LOADING:
-                body = "正在拉取…";
+                showToast(client, title, "正在同步排行榜，网络较慢时可稍后用 /ylctier refresh 重试");
                 break;
             default:
-                body = "尚未拉取";
                 break;
         }
+    }
 
-        showToast(client, title, body);
+    /** 失败时说明现在是什么情况、可以怎么办。 */
+    private static String cacheHint() {
+        String base;
+        if (SERVICE.hasData()) {
+            long age = SERVICE.dataAgeMinutes();
+            base = "正在使用本地缓存（" + SERVICE.size() + " 人"
+                    + (age >= 0 ? "，" + age + " 分钟前" : "") + "）";
+        } else {
+            base = "没有可用的本地缓存，段位标签暂时不会显示";
+        }
+        return base + "。可输入 /ylctier refresh 手动重试。";
     }
 
     /**
@@ -125,9 +163,14 @@ public class YlcTierTaggerClient implements ClientModInitializer {
                     Text.literal(title),
                     Text.literal(body)));
         } catch (Throwable t) {
-            if (client.player != null) {
-                client.player.sendMessage(Text.literal("[" + title + "] " + body), false);
-            }
+            chat(client, Text.literal("[" + title + "] " + body));
+        }
+    }
+
+    /** 往聊天栏发一条消息。 */
+    private static void chat(MinecraftClient client, Text text) {
+        if (client.player != null) {
+            client.player.sendMessage(text, false);
         }
     }
 }

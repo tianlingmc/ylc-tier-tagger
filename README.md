@@ -13,6 +13,19 @@
 - 设置界面有四个入口：游戏内 `/ylctier`、游戏「选项」界面左下角的「PVPTIER 榜单设置」按钮、ModMenu 里的「配置」按钮、装了 cloth-config 时的 `/config`
 - `/ylctier refresh` 手动重拉，`/ylctier <玩家名>` 查看某人的段位
 
+## 排行榜同步
+
+每次**启动游戏**都会自动向 `https://pvptier.ylcmc.top/api/list` 拉一次全量榜单。
+
+- 数据缓存在 `config/ylc-tier-tagger/tier_cache.json`（跟随游戏的 config 目录），
+  站点临时不可用时继续用本地缓存，段位标签照常显示
+- 同步成功会提示「已同步 N 名玩家的段位」
+- 同步失败会提示具体原因（DNS 解析失败 / 连不上站点 / 超时 / 返回内容异常），
+  同时在聊天栏发一条红色消息，说明当前用的是缓存还是无数据，并提示可以用
+  `/ylctier refresh` 手动重试
+- 网络异常、接口返回异常、缓存文件损坏都不会影响游戏启动，全部走兜底逻辑
+- 之后每 10 分钟兜底刷新一次
+
 ## 模式
 
 八个模式与榜单一致：斧 axe、锤 mace、合金 nethop、药水 pot、SMP smp、剑 sword、UHC uhc、水晶 vanilla。
@@ -114,6 +127,55 @@ ModMenu 与 cloth-config 改成**可选集成**（`suggests` 而非 `depends`）
 - ModMenu 集成类实现 `ModMenuApi`，通过 fabric.mod.json 的 `modmenu` entrypoint 注册。Fabric 的 entrypoint 是懒加载的，ModMenu 没装就没人请求这个类型，这个类根本不会被加载，所以零前置环境不受影响。
 - cloth-config 用 `ClothConfigBootstrap` 包一层：先检测 `FabricLoader.getModContainer("cloth-config")`，装了才反射式调用 `AutoConfig.register`。配置类 `ClothConfigAdapter` 直接继承自研的 `TierConfig`，两边读写同一个 `config/ylc-tier-tagger.json`，不会各存一份。
 - 玩家若在 cloth-config 界面改了设置，客户端每 2 秒比对一次配置文件时间戳并重读，两边保持同步。
+
+## 发布到 Modrinth
+
+| 项 | 值 |
+|---|---|
+| 项目 id | `dDefGuBN` |
+| slug | `ylc-tier-tagger` |
+| 项目页 | https://modrinth.com/project/ylc-tier-tagger |
+| 源码 | https://github.com/tianlingmc/ylc-tier-tagger |
+
+### 仓库里各文件的用途
+
+| 文件 | 用途 |
+|---|---|
+| `src/main/resources/fabric.mod.json` | 模组元数据：id、版本、入口、依赖、兼容范围、图标与联系方式 |
+| `modrinth.json` | Modrinth 页面元数据：简介正文、分类、客户端/服务端要求、图标、依赖声明 |
+| `.github/workflows/release.yml` | 打 tag（`v*`）后自动构建两个包并上传到 Modrinth 与 GitHub Release |
+| `tools/build-all.sh` | 本地一键出两个包，产物落在 `dist/` |
+| `tools/make-icon.py` | 由 `modicon.jpg` 转换出 mod 图标（只转格式，不改动原图内容） |
+| `dist/1.20.5-1.21.11/` | 面向 1.20.5 及以后客户端的包，Java 21 |
+| `dist/1.20.1-1.20.4/` | 面向 1.20.1 ~ 1.20.4 客户端的包，Java 17 |
+
+### 上传的两个文件
+
+同一个 Modrinth 版本下挂两个文件，**只上传 `-fabric.jar`，不要传 `-sources.jar`**：
+
+```
+TLCTierTagger-0.1.9-fabric.jar            给 1.20.5 ~ 1.21.11
+TLCTierTagger-0.1.9-fabric-mc1.20.4.jar   给 1.20.1 ~ 1.20.4
+```
+
+### 依赖声明
+
+- 模组本体**零前置**，只依赖 Fabric Loader
+- ModMenu（`mOgUt4GM`）与 Cloth Config（`9s6osm5g`）在 `fabric.mod.json` 里是 `suggests`，
+  在 `modrinth.json` 里是 `optional`——装不装都能用
+- 不声明 Fabric API 依赖：模组没有用到它
+
+### 发版步骤
+
+```bash
+# 1. 改 gradle.properties 的 mod_version（第三位 +1）
+# 2. 提交并打 tag
+git tag v0.1.9
+git push --tags
+```
+
+GitHub Actions 会构建两个包、上传 Modrinth（需要仓库里配好 `MODRINTH_TOKEN` secret）
+并创建 GitHub Release。
 
 ## 目录
 
