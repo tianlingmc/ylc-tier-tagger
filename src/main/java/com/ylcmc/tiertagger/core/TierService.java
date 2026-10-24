@@ -101,6 +101,11 @@ public final class TierService {
         return players.size();
     }
 
+    /** 返回全部玩家记录（只读遍历用，例如聊天栏按显示名反查）。 */
+    public java.util.Collection<PlayerEntry> entries() {
+        return players.values();
+    }
+
     /** 缓存是否过期。 */
     public boolean isExpired() {
         return System.currentTimeMillis() - lastUpdate > CACHE_TTL_MS;
