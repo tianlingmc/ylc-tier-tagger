@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "ylctiertagger",
+  "version": "${version}",
+  "name": "YLC Tier Tagger",
+  "description": "在玩家名字旁显示 PVPTIER 榜单的段位。",
+  "authors": ["凌云海工作室"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "com.ylcmc.tiertagger.client.YlcTierTaggerClient"
+    ],
+    "main": [
+      "com.ylcmc.tiertagger.YlcTierTagger"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": "*",
+    "minecraft": "${minecraft_version}",
+    "java": ">=21",
+    "cloth-config": "*"
+  }
+}
