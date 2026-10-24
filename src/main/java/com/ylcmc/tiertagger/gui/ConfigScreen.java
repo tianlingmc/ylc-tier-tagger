@@ -397,4 +397,17 @@ public class ConfigScreen extends Screen {
         }
     }
 
+    /**
+     * 按 ESC 时退回上一级界面，而不是把界面整个关掉回到游戏。
+     *
+     * <p>重写 {@code close()} 而不是 {@code keyPressed()}：后者的签名在 1.20.x 是
+     * {@code (int, int, int)}、1.21.11 改成了 {@code (KeyInput)}，单份源码没法同时覆盖；
+     * 而 {@code close()} 两边都是 {@code public void close()}，且原版按 ESC 的处理
+     * （{@code shouldCloseOnEsc()} 成立时）就是调它。
+     */
+    @Override
+    public void close() {
+        closeToParent();
+    }
+
 }

@@ -65,4 +65,17 @@ public class ModeSelectScreen extends Screen {
                 Text.literal("点击选中一个模式；选定模式没有段位时按显示规则处理。"),
                 8, 24, 0xff9aa0a6, false);
     }
+
+    /**
+     * 按 ESC 退回上一级（设置页），而不是整个关掉。
+     *
+     * <p>与 ConfigScreen 同理：重写 close() 而非 keyPressed()，避开两个版本范围
+     * 之间 keyPressed 签名不一致的问题。
+     */
+    @Override
+    public void close() {
+        if (client != null) {
+            client.setScreen(parent);
+        }
+    }
 }
