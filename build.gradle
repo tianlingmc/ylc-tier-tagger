@@ -30,7 +30,7 @@ version = bumpVersion()
 group = project.maven_group
 
 base {
-    archivesName = "TLCTierTagger"
+    archivesName = "YLCTierTagger"
 }
 
 repositories {
@@ -104,9 +104,9 @@ jar {
     }
 }
 
-// 产物名：TLCTierTagger-<版本号>-fabric.jar
+// 产物名：YLCTierTagger-<版本号>-fabric.jar
 tasks.named("remapJar") {
-    archiveFileName = "TLCTierTagger-${project.version}-fabric.jar"
+    archiveFileName = "YLCTierTagger-${project.version}-fabric.jar"
 }
 
 publishing {

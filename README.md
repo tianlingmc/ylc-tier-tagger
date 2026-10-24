@@ -1,204 +1,119 @@
-# ylc-tier-tagger
+# YLCTierTagger
 
-1.21.11 高版本 服务器 YueLunarCourt 的 专属 PVP 榜单 Tagger 模组 | The exclusive PVP leaderboard Tagger mod for the YueLunarCourt server on Minecraft 1.21.11 (a newer version).
+> 1.21.11 高版本 服务器 YueLunarCourt 的 专属 PVP 榜单 Tagger 模组
+>
+> The exclusive PVP leaderboard Tagger mod for the YueLunarCourt server on Minecraft 1.21.11 (a newer version).
 
-## 功能
+在 YueLunarCourt 的 PVP 榜单上，每位玩家都有一份属于自己的段位。
+这个模组让客户端把段位直接显示出来：玩家的名字旁边会出现对应的模式图标与段位。
 
-- 头顶名牌、Tab 玩家列表、**聊天栏里的玩家名**，都带上「模式图标 + 段位」
-- 聊天栏里的标签放在名字前面还是后面，跟「显示位置」设置联动
-- **进程启动时拉一次最新榜单**，进游戏后弹窗告知数据状态（成功显示人数，失败显示原因）
-- 数据取自 PVPTIER 榜单接口，另有本地缓存兜底，缓存写在 `config/ylc-tier-tagger/tier_cache.json`
-- **零前置**：只依赖 Fabric Loader，不需要 fabric-api、cloth-config 或任何其他模组
-- **ModMenu / cloth-config 是可选的**：装了就有模组列表里的「配置」按钮和标准的 `/config` 命令，没装也能正常用
-- 设置界面有四个入口：游戏内 `/ylctier`、游戏「选项」界面左下角的「PVPTIER 榜单设置」按钮、ModMenu 里的「配置」按钮、装了 cloth-config 时的 `/config`
-- `/ylctier refresh` 手动重拉，`/ylctier <玩家名>` 查看某人的段位
+## 显示位置
 
-## 排行榜同步
-
-每次**启动游戏**都会自动向 `https://pvptier.ylcmc.top/api/list` 拉一次全量榜单。
-
-- 数据缓存在 `config/ylc-tier-tagger/tier_cache.json`（跟随游戏的 config 目录），
-  站点临时不可用时继续用本地缓存，段位标签照常显示
-- 同步成功会提示「已同步 N 名玩家的段位」
-- 同步失败会提示具体原因（DNS 解析失败 / 连不上站点 / 超时 / 返回内容异常），
-  同时在聊天栏发一条红色消息，说明当前用的是缓存还是无数据，并提示可以用
-  `/ylctier refresh` 手动重试
-- 网络异常、接口返回异常、缓存文件损坏都不会影响游戏启动，全部走兜底逻辑
-- 之后每 10 分钟兜底刷新一次
-
-## 模式
-
-八个模式与榜单一致：斧 axe、锤 mace、合金 nethop、药水 pot、SMP smp、剑 sword、UHC uhc、水晶 vanilla。
-
-段位为 `HT1`~`HT5` 与 `LT1`~`LT5`，强度序 `HT1 > LT1 > HT2 > LT2 > ... > HT5 > LT5`（值小者强）。
-
-## 配置项
-
-设置在游戏内 `/ylctier` 界面里改，写入 `config/ylc-tier-tagger.json`。装了 cloth-config 的话两边共用这一个文件。
-
-| 项 | 说明 |
+| 位置 | 说明 |
 |---|---|
-| `enabled` | 总开关 |
-| `showOnTab` | 是否在 Tab 玩家列表显示 |
-| `showInChat` | 是否在聊天消息的玩家名后显示 |
-| `renderLocation` | 段位显示在名字左侧或右侧（头顶名牌、Tab、聊天栏统一） |
-| `selectedMode` | 优先使用的模式 |
-| `displayRule` | 只用选中的模式 / 只显示最高的档位 / 优先选中的模式 |
-| `HT1`~`HT5`、`LT1`~`LT5` | 各段位颜色，界面里点按钮循环切换预设色 |
+| 头顶名牌 | 站在玩家附近时，名字旁显示段位 |
+| Tab 玩家列表 | 按 Tab 打开的玩家列表中显示段位 |
+| 聊天栏 | 聊天消息提到某个玩家时，名字后面跟着段位 |
+
+聊天栏里的段位放在名字前还是名字后可以设置，Tab 列表与头顶名牌的显示位置同样可调。
+
+## 模式与段位
+
+| 模式 | 榜单标识 |
+|---|---|
+| 斧 | `axe` |
+| 锤 | `mace` |
+| 合金 | `nethop` |
+| 药水 | `pot` |
+| SMP | `smp` |
+| 剑 | `sword` |
+| UHC | `uhc` |
+| 水晶 | `vanilla` |
+
+段位分高段与低段两档，共 `HT1` ~ `HT5` 与 `LT1` ~ `LT5`。
+同一模式内 `HT1` 最高、`LT5` 最低。各段位的颜色可以在设置里调整。
+
+## 游戏内文本
+
+| 位置 | 文本 |
+|---|---|
+| 命令 | `/ylctier` |
+| 命令 | `/ylctier refresh` |
+| 命令 | `/ylctier <玩家名>` |
+| 选项界面 | PVPTIER 榜单设置 |
+| 设置项 | 总开关 |
+| 设置项 | Tab 列表显示 |
+| 设置项 | 聊天栏显示 |
+| 设置项 | 显示位置 |
+| 设置项 | 优先模式 |
+| 设置项 | 显示规则 |
+| 设置项 | 各段位颜色 |
+| 同步成功 | 已同步 N 名玩家的段位 |
+| 同步失败 | `[PVPTIER] 排行榜同步失败：<原因>` |
+| 手动重试提示 | 可输入 /ylctier refresh 手动重试。 |
+
+## 设置
+
+有三种方式打开设置界面：
+
+- 游戏内输入 `/ylctier`
+- 选项界面左下角的「PVPTIER 榜单设置」
+- 安装了 [ModMenu](https://modrinth.com/mod/modmenu) 的话，模组列表里的「配置」按钮
+
+安装了 [Cloth Config](https://modrinth.com/mod/cloth-config) 时，还可以使用标准的 `/config` 命令。
+
+## 依赖
+
+模组本身不需要任何前置模组，只依赖 Fabric Loader。
+ModMenu 与 Cloth Config 属于可选依赖，装上之后会多出对应的入口，不装也能正常使用。
+
+## 支持的客户端版本
+
+| 客户端 | 需要的 Java | 下载哪个文件 |
+|---|---|---|
+| 1.20.5 ~ 1.21.11 | Java 21 | `YLCTierTagger-<版本>-fabric.jar` |
+| 1.20.1 ~ 1.20.4 | Java 17 | `YLCTierTagger-<版本>-fabric-mc1.20.4.jar` |
+
+1.20.5 之前的 Minecraft 运行在 Java 17 上，文件格式与新版不通用，因此单独提供一份。
+
+## 安装
+
+把对应版本的 `.jar` 放进客户端的 `mods` 目录即可。
+
+## 数据
+
+段位数据取自 PVPTIER 榜单接口。
+
+- 每次启动游戏会自动同步一次
+- 同步结果缓存在游戏的 config 目录中，站点临时不可用时会继续沿用上一次的数据
+- 同步失败时会在游戏内说明原因，并提示可以用 `/ylctier refresh` 手动重试
+- 同步在后台进行，不会影响游戏启动
 
 ## 构建
+
+需要 JDK 21。
 
 ```bash
 ./gradlew build
 ```
 
-一键出两个包：
+产物在 `build/libs/`，命名为 `YLCTierTagger-<版本号>-fabric.jar`。
+版本号采用 `大版本.小版本.修订号`，第三位会在每次构建时自动加一。
+
+需要同时产出 1.20.1 ~ 1.20.4 的包时：
 
 ```bash
 bash tools/build-all.sh
 ```
 
-产物在 `dist/` 下，两个包版本号一致：
+两个版本的包会分别放在 `dist/` 下的两个目录里，版本号一致。
 
-```
-dist/1.20.5-1.21.11/TLCTierTagger-<版本号>-fabric.jar   Java 21
-dist/1.20.1-1.20.4/TLCTierTagger-<版本号>-fabric.jar   Java 17
-```
+## 相关链接
 
-直接放进对应版本客户端的 `mods` 目录。
+- Modrinth：https://modrinth.com/mod/ylc-tier-tagger
+- 源码：https://github.com/tianlingmc/ylc-tier-tagger
+- 问题反馈：https://github.com/tianlingmc/ylc-tier-tagger/issues
 
-### 版本号
+## 许可
 
-版本号格式 `大版本.小版本.修订号`，目前是 beta 阶段，保持在 `0.x.y` 不进 1.0.0。
-**每次构建第三位自动 +1**（0.1.0 → 0.1.1 → 0.1.2 …），写回 `gradle.properties` 的 `mod_version`。
-只想重新打一次包、不想动版本号时加 `-PnoVersionBump`。
-
-### 支持的客户端版本
-
-| 客户端 | 产物 | 说明 |
-|---|---|---|
-| 1.20.5 ~ 1.21.11 | `dist/1.20.5-1.21.11/` | Java 21，字节码 65 |
-| 1.20.1 ~ 1.20.4 | `dist/1.20.1-1.20.4/` | Java 17，字节码 61 |
-
-跨版本靠的是 intermediary 映射：Yarn 的类名与方法名在版本间会改，但 intermediary 名基本稳定，
-所以同一份字节码能同时跑在多个版本上。为此做了两处适配：
-
-- 文本构造用 `Text.literal`（intermediary `method_43470`，1.20.1 起一直没变），
-  而不是 `Text.of`（1.20/1.20.6/1.21.4+ 各是不同 intermediary 名）
-- 玩家名用反射取（`GameProfile` 在 1.21.9 改成了 record，`name()` 与 `getName()` 两边都兼容）
-
-单出一个包的完整参数（`tools/build-all.sh` 里就是这么调的）：
-
-```bash
-./gradlew build -PnoVersionBump   -PmcVersion=1.20.4 -PyarnVersion=1.20.4+build.3 -PjavaRelease=17   -PfabricApiVersion=0.97.3+1.20.4 -PmodmenuVersion=9.2.0
-```
-
-manifest 里声明的兼容范围会随构建目标自动切换，不用手改。
-
-## 构建环境
-
-| 项 | 版本 |
-|---|---|
-| Minecraft | 1.21.11 |
-| 映射 | Yarn 1.21.11+build.6 |
-| Fabric Loader | 0.19.3 |
-| Loom | 1.14.10 |
-| Gradle | 9.2.1 |
-| ModMenu（可选） | 17.0.1 |
-| cloth-config（可选） | 21.11.160 |
-
-运行时只依赖 Fabric Loader。ModMenu 与 cloth-config 只在编译期与 remap 时需要，运行时玩家装了才有对应入口，没装不受影响。ModMenu 从 Modrinth 的 Maven 代理拉（`https://api.modrinth.com/maven`），避开官方 maven 仓库在本机连不上的问题。
-
-插件 id 必须写 `net.fabricmc.fabric-loom-remap`：`net.fabricmc.fabric-loom` 是「不 remap」标记插件，会强制关闭混淆，导致 Yarn 映射配不进去。
-
-Loom 1.14 起不再默认启用 mixin 注解处理器，混流目标名由 Loom 在 remap 阶段直接改写为 intermediary 名，因此不需要 refmap 文件。
-
-## 零前置是怎么做到的
-
-| 原本依赖 | 换成 |
-|---|---|
-| fabric-api 的 `ClientTickEvents` | `MinecraftClientMixin` 注入 `MinecraftClient.tick` |
-| fabric-api 的 `ClientCommandRegistrationCallback` | 注入拿到 `ClientPlayNetworkHandler`，把命令注册到游戏自带的 `CommandDispatcher<ClientCommandSource>` |
-| cloth-config 的配置界面 | 自绘 `ConfigScreen`，配置用 Gson 存 JSON |
-| cloth-config 的 `/config` 命令 | 自己的 `/ylctier` 命令 |
-
-ModMenu 与 cloth-config 改成**可选集成**（`suggests` 而非 `depends`）：
-
-- ModMenu 集成类实现 `ModMenuApi`，通过 fabric.mod.json 的 `modmenu` entrypoint 注册。Fabric 的 entrypoint 是懒加载的，ModMenu 没装就没人请求这个类型，这个类根本不会被加载，所以零前置环境不受影响。
-- cloth-config 用 `ClothConfigBootstrap` 包一层：先检测 `FabricLoader.getModContainer("cloth-config")`，装了才反射式调用 `AutoConfig.register`。配置类 `ClothConfigAdapter` 直接继承自研的 `TierConfig`，两边读写同一个 `config/ylc-tier-tagger.json`，不会各存一份。
-- 玩家若在 cloth-config 界面改了设置，客户端每 2 秒比对一次配置文件时间戳并重读，两边保持同步。
-
-## 发布到 Modrinth
-
-| 项 | 值 |
-|---|---|
-| 项目 id | `dDefGuBN` |
-| slug | `ylc-tier-tagger` |
-| 公开页 | https://modrinth.com/mod/ylc-tier-tagger |
-| 源码 | https://github.com/tianlingmc/ylc-tier-tagger |
-
-### 仓库里各文件的用途
-
-| 文件 | 用途 |
-|---|---|
-| `src/main/resources/fabric.mod.json` | 模组元数据：id、版本、入口、依赖、兼容范围、图标与联系方式 |
-| `modrinth.json` | Modrinth 页面元数据：简介正文、分类、客户端/服务端要求、图标、依赖声明 |
-| `.github/workflows/release.yml` | 打 tag（`v*`）后自动构建两个包并上传到 Modrinth 与 GitHub Release |
-| `tools/build-all.sh` | 本地一键出两个包，产物落在 `dist/` |
-| `tools/make-icon.py` | 由 `modicon.jpg` 转换出 mod 图标（只转格式，不改动原图内容） |
-| `dist/1.20.5-1.21.11/` | 面向 1.20.5 及以后客户端的包，Java 21 |
-| `dist/1.20.1-1.20.4/` | 面向 1.20.1 ~ 1.20.4 客户端的包，Java 17 |
-
-### 上传的两个文件
-
-同一个 Modrinth 版本下挂两个文件，**只上传 `-fabric.jar`，不要传 `-sources.jar`**：
-
-```
-TLCTierTagger-0.1.9-fabric.jar            给 1.20.5 ~ 1.21.11
-TLCTierTagger-0.1.9-fabric-mc1.20.4.jar   给 1.20.1 ~ 1.20.4
-```
-
-### 依赖声明
-
-- 模组本体**零前置**，只依赖 Fabric Loader
-- ModMenu（`mOgUt4GM`）与 Cloth Config（`9s6osm5g`）在 `fabric.mod.json` 里是 `suggests`，
-  在 `modrinth.json` 里是 `optional`——装不装都能用
-- 不声明 Fabric API 依赖：模组没有用到它
-
-### 发版步骤
-
-```bash
-# 1. 改 gradle.properties 的 mod_version（第三位 +1）
-# 2. 提交并打 tag
-git tag v0.1.9
-git push --tags
-```
-
-GitHub Actions 会构建两个包、上传 Modrinth（需要仓库里配好 `MODRINTH_TOKEN` secret）
-并创建 GitHub Release。
-
-## 目录
-
-```
-src/main/java/com/ylcmc/tiertagger/
-  YlcTierTagger.java               模组入口
-  client/YlcTierTaggerClient.java  初始化：配置、启动拉取、tick 处理
-  client/YlcTierCommand.java       /ylctier 命令
-  core/TierService.java            接口拉取与本地缓存
-  core/TierRegistry.java           模式注册表与段位强度序
-  core/TierLabel.java              段位选取与名字拼接
-  core/ChatTagger.java             聊天消息玩家名加标签
-  core/PlayerNames.java            反射取玩家名（跨 GameProfile 改动）
-  core/TierConfig.java             配置项与读写
-  gui/ConfigScreen.java            自绘设置界面
-  gui/ModeSelectScreen.java        tier 模式选择界面
-  modmenu/ModMenuIntegration.java  ModMenu 可选集成
-  modmenu/ClothConfigAdapter.java  cloth-config 可选集成（继承 TierConfig）
-  modmenu/ClothConfigBootstrap.java  cloth-config 探测与注册
-  mixin/MinecraftClientMixin.java  tick 钩子：命令注册、刷新、提示
-  mixin/PlayerEntityMixin.java     头顶名牌
-  mixin/ChatHudMixin.java          聊天栏玩家名
-  mixin/PlayerListHudMixin.java    Tab 玩家列表
-tools/make-icon.py                 由 modicon.jpg 生成 mod 图标
-tools/build-all.sh                 一键出两个版本的包
-```
+MIT。模式图标来自 [CnTierTagger](https://github.com/tmdakm/CnTierTagger)（Apache-2.0），详见 `NOTICE`。
