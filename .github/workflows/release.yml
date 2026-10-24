@@ -56,19 +56,14 @@ jobs:
             unzip -p "$f" fabric.mod.json | head -20
           done
 
-      - name: 生成更新日志
-        id: changelog
+      - name: 准备发布文本
+        id: texts
         run: |
-          PREV=$(git describe --tags --abbrev=0 2>/dev/null || true)
-          if [ -n "$PREV" ]; then
-            {
-              echo 'changelog<<EOF'
-              git log --pretty='- %s (%h)' "$PREV"..HEAD
-              echo 'EOF'
-            } >> "$GITHUB_OUTPUT"
-          else
-            echo 'changelog=首次发布' >> "$GITHUB_OUTPUT"
-          fi
+          {
+            echo 'changelog<<EOF'
+            cat modrinth-changelog.md
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
 
       - name: 上传到 Modrinth
         uses: modrinth/modrinth-action@v1
@@ -78,7 +73,7 @@ jobs:
           file_path: dist/*.jar
           version_number: ${{ steps.ver.outputs.version }}
           name: ${{ steps.ver.outputs.version }}
-          changelog: ${{ steps.changelog.outputs.changelog }}
+          changelog: ${{ steps.texts.outputs.changelog }}
           game_versions: >-
             1.20.1,1.20.2,1.20.3,1.20.4,1.20.5,1.20.6,1.21.1,1.21.2,1.21.3,1.21.4,1.21.5,1.21.6,1.21.7,1.21.8,1.21.9,1.21.10,1.21.11
           dependencies: >-
@@ -89,4 +84,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: dist/*.jar
-          generate_release_notes: true
+          # 与 Modrinth 用同一份描述正文
+          body_path: modrinth-description.md
+          name: YLCTierTagger ${{ steps.ver.outputs.version }}
