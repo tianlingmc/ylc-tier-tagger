@@ -43,6 +43,8 @@ repositories {
 // 可以用 -PmcVersion=1.20.4 -PyarnVersion=1.20.4+build.3 -PjavaRelease=17 切到旧版本出包
 def mcVersion = project.findProperty('mcVersion') ?: project.minecraft_version
 def yarnVersion = project.findProperty('yarnVersion') ?: project.yarn_mappings
+def fabricApiVersion = project.findProperty('fabricApiVersion') ?: project.fabric_version
+def modmenuVer = project.findProperty('modmenuVersion') ?: project.modmenu_version
 
 dependencies {
     minecraft "com.mojang:minecraft:${mcVersion}"
@@ -52,7 +54,8 @@ dependencies {
 
     // 以下两个都是可选集成：仅编译期与 remap 需要，
     // 玩家装了才有模组列表里的配置按钮 / config 命令，没装也能正常使用
-    modImplementation "maven.modrinth:modmenu:${project.modmenu_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}"
+    modImplementation "maven.modrinth:modmenu:${modmenuVer}"
     modImplementation "me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}"
 }
 

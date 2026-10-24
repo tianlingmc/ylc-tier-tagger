@@ -3,14 +3,12 @@ package com.ylcmc.tiertagger.client;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
-import com.mojang.brigadier.context.CommandContext;
 import com.ylcmc.tiertagger.core.PlayerEntry;
 import com.ylcmc.tiertagger.core.TierConfig;
 import com.ylcmc.tiertagger.core.TierEntry;
 import com.ylcmc.tiertagger.core.TierRegistry;
 import com.ylcmc.tiertagger.gui.ConfigScreen;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientCommandSource;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -21,11 +19,15 @@ import net.minecraft.util.Formatting;
  * /ylctier &lt;玩家名&gt; —— 查看某人在各模式的段位
  *
  * <p>命令直接注册到游戏自带的客户端 dispatcher 上，不依赖 fabric-api。
+ *
+ * <p>这里刻意用原始类型（不带泛型参数）：客户端命令的 source 类型在
+ * 1.20.x 与 1.21.9+ 之间换过包位置，泛型擦除后就不受影响了。
  */
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class YlcTierCommand {
 
-    public static LiteralArgumentBuilder<ClientCommandSource> build() {
-        LiteralArgumentBuilder<ClientCommandSource> root = LiteralArgumentBuilder.literal("ylctier");
+    public static LiteralArgumentBuilder build() {
+        LiteralArgumentBuilder root = LiteralArgumentBuilder.literal("ylctier");
 
         root.executes(context -> {
             MinecraftClient client = MinecraftClient.getInstance();
@@ -35,22 +37,22 @@ public class YlcTierCommand {
             return 1;
         });
 
-        root.then(LiteralArgumentBuilder.<ClientCommandSource>literal("refresh")
+        root.then(LiteralArgumentBuilder.literal("refresh")
                 .executes(context -> {
                     boolean started = YlcTierTaggerClient.SERVICE.refreshAsync();
-                    reply(context, Text.literal(started ? "正在重新拉取榜单…" : "正在拉取中，请稍候"));
+                    reply(Text.literal(started ? "正在重新拉取榜单…" : "正在拉取中，请稍候"));
                     return 1;
                 }));
 
-        root.then(RequiredArgumentBuilder.<ClientCommandSource, String>argument("player", StringArgumentType.string())
+        root.then(RequiredArgumentBuilder.argument("player", StringArgumentType.string())
                 .executes(context -> {
-                    String name = context.getArgument("player", String.class);
+                    String name = (String) context.getArgument("player", String.class);
                     PlayerEntry entry = YlcTierTaggerClient.SERVICE.find(name);
                     if (entry == null) {
-                        reply(context, Text.literal("排行榜里没有这个玩家").copy().styled(s -> s.withColor(Formatting.RED)));
+                        reply(Text.literal("排行榜里没有这个玩家").copy().styled(s -> s.withColor(Formatting.RED)));
                         return 0;
                     }
-                    reply(context, buildPlayerCard(entry));
+                    reply(buildPlayerCard(entry));
                     return 1;
                 }));
 
@@ -86,7 +88,7 @@ public class YlcTierCommand {
     }
 
     /** 往聊天栏发一条消息。 */
-    private static void reply(CommandContext<ClientCommandSource> context, Text text) {
+    private static void reply(Text text) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client != null && client.player != null) {
             client.player.sendMessage(text, false);
