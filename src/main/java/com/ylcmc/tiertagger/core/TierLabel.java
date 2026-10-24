@@ -86,8 +86,9 @@ public final class TierLabel {
 
         MutableText badge = Text.literal(String.valueOf(mode.icon)).copy()
                 .styled(s -> s.withColor(Formatting.WHITE));
+        // 配置里存的是 RGB，这里补上 alpha，否则段位文字会被当成全透明画不出来
         badge.append(Text.literal(selected.tier).copy()
-                .styled(s -> s.withColor(cfg.colorOf(selected.tier))));
+                .styled(s -> s.withColor(0xFF000000 | cfg.colorOf(selected.tier))));
         return badge;
     }
 
@@ -111,7 +112,7 @@ public final class TierLabel {
         MutableText icon = Text.literal(String.valueOf(mode.icon)).copy()
                 .styled(s -> s.withColor(Formatting.WHITE));
         MutableText tier = Text.literal(selected.tier).copy()
-                .styled(s -> s.withColor(cfg.colorOf(selected.tier)));
+                .styled(s -> s.withColor(0xFF000000 | cfg.colorOf(selected.tier)));
         MutableText separator = Text.literal(" | ").copy().styled(s -> s.withColor(Formatting.GRAY));
         MutableText space = Text.literal(" ").copy();
 

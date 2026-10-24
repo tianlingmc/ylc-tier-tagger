@@ -11,6 +11,15 @@
 - Fixed missing tier tags on regular chat messages (text typed by players): the client composes those with `Text.translatable("chat.type.text", name, content)`, so the name lives in the `TranslatableTextContent` args rather than in siblings, and the old siblings-only walk always missed it; added replacement support for translatable arguments
 - Symptom: join broadcasts and system messages were tagged correctly while `name: message` chat lines got nothing, because the two have completely different message trees (server-composed trees are hit, locally composed ones were not)
 - Argument matching is deliberately conservative: prefers an arg whose text exactly equals a player name, otherwise uses the shortest arg containing one, so message bodies are less likely to be mistaken for the sender
+- 修复设置页所有文字不可见：MC 的颜色是 ARGB，源码里普遍写成 `0xRRGGBB`（alpha 为 0）等于全透明，导致文字、分割线、段位色块一个都画不出来，而带 `0xff` 的行底色照常显示——这正是截图里「有色块、没文字」的原因；已统一补齐 alpha
+- 修复聊天栏与玩家列表里的段位文字可能全透明（同一个 alpha 问题）：配置里存的是 RGB，渲染前补上 alpha
+- 设置页滚动从「上下箭头按钮」改为原生风格的滚动条（轨道 + 滑块）并支持滚轮，方向与原版 `ScrollableWidget` 一致
+- 说明：拖拽滚动暂不支持——`mouseDragged` / `mouseClicked` 的签名在 1.20.x（`double,double,int`）与 1.21.11（`Click`）之间不兼容，单份源码无法同时覆盖；`mouseScrolled` 四个参数的签名两边一致，所以滚轮是安全的
+
+- Fixed the config screen showing no text at all: MC colours are ARGB and the code mostly wrote `0xRRGGBB` (alpha 0, i.e. fully transparent), so text, separators and tier swatches were never drawn while the row background (which had `0xff`) showed normally - exactly the "bars without text" seen in screenshots; alpha is now set everywhere
+- Fixed tier text possibly rendering fully transparent in chat and in the player list (same alpha issue): config stores RGB, alpha is added before rendering
+- Config screen scrolling changed from up/down arrow buttons to a vanilla-style scrollbar (track + thumb) with mouse-wheel support, matching vanilla `ScrollableWidget` direction
+- Note: drag-to-scroll is not supported yet - `mouseDragged` / `mouseClicked` signatures differ between 1.20.x (`double,double,int`) and 1.21.11 (`Click`), so one source file cannot cover both; `mouseScrolled` has the same 4-parameter signature on both and is therefore safe
 
 ## 1.1.0
 

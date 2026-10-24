@@ -4,6 +4,10 @@
 
 Fixed missing tier tags on regular chat messages (text typed by players): the client composes them with `Text.translatable("chat.type.text", name, content)`, so the name lives in the `TranslatableTextContent` args rather than in siblings, and the old siblings-only walk always missed it; added replacement support for translatable arguments. Symptom: join broadcasts and system messages were tagged while `name: message` chat lines got nothing. Argument matching is conservative: prefers an arg whose text exactly equals a player name, otherwise the shortest arg containing one, so bodies are less likely to be mistaken for the sender.
 
+修复设置页所有文字不可见：MC 的颜色是 ARGB，源码里普遍写成 `0xRRGGBB`（alpha 为 0）等于全透明，导致文字、分割线、段位色块一个都画不出来，而带 `0xff` 的行底色照常显示——这正是截图里「有色块、没文字」的原因；已统一补齐 alpha。同时修复聊天栏与玩家列表里的段位文字可能全透明（同一个 alpha 问题）。设置页滚动从「上下箭头按钮」改为原生风格的滚动条（轨道 + 滑块）并支持滚轮，方向与原版 `ScrollableWidget` 一致。拖拽滚动暂不支持：`mouseDragged` / `mouseClicked` 的签名在 1.20.x（`double,double,int`）与 1.21.11（`Click`）之间不兼容，单份源码无法同时覆盖。
+
+Fixed the config screen showing no text at all: MC colours are ARGB and the code mostly wrote `0xRRGGBB` (alpha 0, fully transparent), so text, separators and tier swatches were never drawn while the row background (which had `0xff`) showed normally - exactly the "bars without text" seen in screenshots; alpha is now set everywhere. Also fixed tier text possibly rendering fully transparent in chat and the player list (same alpha issue). Config scrolling changed from up/down arrow buttons to a vanilla-style scrollbar (track + thumb) with wheel support, matching vanilla `ScrollableWidget` direction. Drag-to-scroll is not supported: `mouseDragged` / `mouseClicked` signatures differ between 1.20.x (`double,double,int`) and 1.21.11 (`Click`).
+
 # 1.1.0
 
 修复 1.20.1–1.20.4（Java 17）构建启动即崩：mixin 配置 compatibilityLevel 误写 JAVA_21，Java 17 运行时拒绝应用、所有混用失效；改为 JAVA_17，两个版本范围统一可跑。修复聊天栏段位装饰引发的两次启动崩溃（@ModifyArg@HEAD 不是合法注入点；@ModifyVariable 误用 argsOnly+index=0 把 this 槽位当参数）；最终用 @ModifyVariable 正确槽位（非静态方法第一个参数在槽位 1）替换消息参数。修正 LT5 与 LT4 默认颜色重复；修正 fabric.mod.json 描述转义错误并更正支持版本范围。数据接口偶发返回非 JSON（瞬断/网关）已做 3 次重试与本地缓存兜底，不会崩或卡启动。

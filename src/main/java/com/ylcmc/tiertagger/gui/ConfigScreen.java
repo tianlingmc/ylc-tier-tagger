@@ -31,14 +31,17 @@ public class ConfigScreen extends Screen {
     private static final int ROW_H = 24;      // 单行高度
     private static final int ROW_GAP = 4;     // 行间距
     private static final int COL_GAP = 10;    // 段位颜色两列之间的间距
-    private static final int SCROLL_W = 16;   // 右侧滚动按钮宽度
-    private static final int SCROLL_GUTTER = SCROLL_W + 8; // 滚动按钮占用的右侧空间
+    private static final int SCROLLBAR_W = 6;              // 右侧滚动条宽度（原生风格）
+    private static final int SCROLLBAR_GUTTER = SCROLLBAR_W + 8; // 滚动条占用的右侧空间
     private static final int PAD = 8;         // 行内文字左右内边距
 
     /** 行面板的底色与悬停色（不透明，确保亮/暗主题下都看得清文字）。 */
     private static final int ROW_BG = 0xff26292f;
     private static final int ROW_BG_HOVER = 0xff363b45;
-    private static final int SEPARATOR = 0x2a2a2e;
+    // MC 的颜色是 ARGB：少了 alpha 就是全透明，画出来等于没画（此前文字与分割线全部不可见就是这个原因）
+    private static final int SEPARATOR = 0xff2a2a2e;
+    private static final int SCROLLBAR_TRACK = 0xff1b1b1e;
+    private static final int SCROLLBAR_THUMB = 0xff5a5f6a;
 
     /** 点击颜色行时循环切换的预设色。 */
     private static final int[] PALETTE = {
@@ -58,6 +61,9 @@ public class ConfigScreen extends Screen {
 
     /** 内容超出可视区的最大滚动量。 */
     private int maxScroll = 0;
+
+    /** 可视区高度，画滚动条滑块时用。 */
+    private int viewportH = 0;
 
     /** 所有内容行（含说明 / 分区 / 设置 / 颜色），绝对坐标（未应用滚动偏移）。 */
     private final List<Item> items = new ArrayList<>();
@@ -94,17 +100,17 @@ public class ConfigScreen extends Screen {
         // 先按整宽排版，算出是否需要滚动；需要的话给右侧滚动按钮让出空间重排。
         List<Item> laid = buildItems(contentTop, x, fullW);
         int visibleH = contentBottom - contentTop;
+        viewportH = visibleH;
         maxScroll = Math.max(0, bottomOf(laid) - visibleH);
         if (scrollOffset > maxScroll) scrollOffset = maxScroll;
         if (scrollOffset < 0) scrollOffset = 0;
         if (maxScroll > 0) {
-            laid = buildItems(contentTop, x, fullW - SCROLL_GUTTER);
+            laid = buildItems(contentTop, x, fullW - SCROLLBAR_GUTTER);
         }
 
         items.addAll(laid);
         buildHeader();
         buildFooter();
-        buildScroll(contentTop, contentBottom);
         addRowButtons(contentTop, contentBottom);
     }
 
@@ -254,17 +260,21 @@ public class ConfigScreen extends Screen {
                 .dimensions(startX + 2 * (btnW + gap), by, btnW, 20).build());
     }
 
-    private void buildScroll(int contentTop, int contentBottom) {
+    /**
+     * 滚轮滚动。
+     *
+     * <p>四个参数的签名在 1.20.4 与 1.21.11 一致，可以安全重写；
+     * 拖拽（mouseDragged）两边签名不同（1.20.x 是 double,double,int，1.21.11 换成了 Click），
+     * 单份源码没法同时覆盖，所以只做滚轮 + 滚动条。
+     */
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         if (maxScroll <= 0) {
-            return;
+            return false;
         }
-        int sx = this.width - MARGIN - SCROLL_W;
-        int upY = contentTop + 4;
-        int downY = contentBottom - 20 - 4;
-        addDrawableChild(ButtonWidget.builder(Text.literal("↑"), b -> scrollBy(-(ROW_H + ROW_GAP)))
-                .dimensions(sx, upY, SCROLL_W, 18).build());
-        addDrawableChild(ButtonWidget.builder(Text.literal("↓"), b -> scrollBy(ROW_H + ROW_GAP))
-                .dimensions(sx, downY, SCROLL_W, 18).build());
+        // 与原版 ScrollableWidget 同向：scrollY -= verticalAmount * step
+        scrollBy((int) (-verticalAmount * (ROW_H + ROW_GAP)));
+        return true;
     }
 
     private void scrollBy(int delta) {
@@ -286,11 +296,11 @@ public class ConfigScreen extends Screen {
         context.fill(0, this.height - FOOTER_H, this.width, this.height - FOOTER_H + 1, SEPARATOR);
 
         // 标题导航栏
-        context.drawText(textRenderer, this.title, MARGIN, 10, 0xffffff, true);
+        context.drawText(textRenderer, this.title, MARGIN, 10, 0xffffffff, true);
         int count = YlcTierTaggerClient.SERVICE.size();
         context.drawText(textRenderer,
                 Text.literal("数据来源：pvptier.ylcmc.top　当前 " + count + " 人"),
-                MARGIN, 26, 0x9aa0a6, false);
+                MARGIN, 26, 0xff9aa0a6, false);
 
         int contentTop = HEADER_H;
         int contentBottom = this.height - FOOTER_H;
@@ -300,10 +310,10 @@ public class ConfigScreen extends Screen {
             switch (it.type) {
                 case NOTE:
                     int nx = it.center ? this.width / 2 - textRenderer.getWidth(it.label) / 2 : it.x;
-                    context.drawText(textRenderer, it.label, nx, py + (it.h - 8) / 2, 0x9aa0a6, false);
+                    context.drawText(textRenderer, it.label, nx, py + (it.h - 8) / 2, 0xff9aa0a6, false);
                     break;
                 case SECTION:
-                    context.drawText(textRenderer, it.label, it.x, py + (it.h - 8) / 2, 0xc8cdd2, true);
+                    context.drawText(textRenderer, it.label, it.x, py + (it.h - 8) / 2, 0xffc8cdd2, true);
                     context.fill(it.x, py + it.h - 1, it.x + it.w, py + it.h, SEPARATOR);
                     break;
                 case SETTING:
@@ -318,20 +328,44 @@ public class ConfigScreen extends Screen {
                     // 文字只在整行可见时绘制，避免被底栏截断时露出半截
                     if (py >= contentTop && py + it.h <= contentBottom) {
                         int midY = py + (it.h - 8) / 2;
-                        context.drawText(textRenderer, it.label, it.x + PAD, midY, 0xe6e6e6, false);
+                        context.drawText(textRenderer, it.label, it.x + PAD, midY, 0xffe6e6e6, false);
                         if (it.swatch != null) {
                             int c = it.swatch.get();
                             int sq = 14;
-                            drawSwatch(context, it.x + it.w - sq - PAD, py + (it.h - sq) / 2, sq, c);
+                            // 配置里存的是 RGB，画之前补上 alpha，否则色块全透明
+                            drawSwatch(context, it.x + it.w - sq - PAD, py + (it.h - sq) / 2, sq, 0xFF000000 | c);
                         } else if (it.value != null) {
                             Text v = it.value.get();
                             int tw = textRenderer.getWidth(v);
-                            context.drawText(textRenderer, v, it.x + it.w - tw - PAD, midY, 0xffffff, false);
+                            context.drawText(textRenderer, v, it.x + it.w - tw - PAD, midY, 0xffffffff, false);
                         }
                     }
                     break;
             }
         }
+
+        drawScrollbar(context, contentTop, contentBottom);
+    }
+
+    /** 画右侧原生风格的滚动条（轨道 + 滑块），替代原来的上下箭头按钮。 */
+    private void drawScrollbar(DrawContext context, int contentTop, int contentBottom) {
+        if (maxScroll <= 0 || viewportH <= 0) {
+            return;
+        }
+        int trackX = this.width - MARGIN - SCROLLBAR_W;
+        int trackTop = contentTop + 2;
+        int trackBottom = contentBottom - 2;
+        int trackH = trackBottom - trackTop;
+        if (trackH <= 0) {
+            return;
+        }
+        context.fill(trackX, trackTop, trackX + SCROLLBAR_W, trackBottom, SCROLLBAR_TRACK);
+
+        int contentH = viewportH + maxScroll;
+        int thumbH = Math.max(18, trackH * viewportH / contentH);
+        int travel = trackH - thumbH;
+        int thumbY = trackTop + (int) ((float) scrollOffset / maxScroll * travel);
+        context.fill(trackX, thumbY, trackX + SCROLLBAR_W, thumbY + thumbH, SCROLLBAR_THUMB);
     }
 
     /** 画一个带 1px 描边的色块。 */

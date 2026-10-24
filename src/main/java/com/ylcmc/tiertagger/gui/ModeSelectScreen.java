@@ -60,9 +60,9 @@ public class ModeSelectScreen extends Screen {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
-        context.drawText(textRenderer, this.title, 8, 8, 0xffffff, true);
+        context.drawText(textRenderer, this.title, 8, 8, 0xffffffff, true);
         context.drawText(textRenderer,
                 Text.literal("点击选中一个模式；选定模式没有段位时按显示规则处理。"),
-                8, 24, 0x9aa0a6, false);
+                8, 24, 0xff9aa0a6, false);
     }
 }
