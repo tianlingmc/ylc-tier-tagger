@@ -43,13 +43,6 @@ public class ConfigScreen extends Screen {
     private static final int SCROLLBAR_TRACK = 0xff1b1b1e;
     private static final int SCROLLBAR_THUMB = 0xff5a5f6a;
 
-    /** 点击颜色行时循环切换的预设色。 */
-    private static final int[] PALETTE = {
-            0xe8ba3a, 0xd5b355, 0xc4d3e7, 0xa0a7b2, 0xf89f5a, 0xc67b42,
-            0x81749a, 0x655b79, 0x8f82a8, 0xffffff,
-            0xff5555, 0x55dd55, 0x5555ff, 0xffaa00, 0x00dddd
-    };
-
     /** 打开本界面之前的界面，用于「返回」。 */
     private final Screen parent;
 
@@ -204,7 +197,12 @@ public class ConfigScreen extends Screen {
             ci.type = Type.COLOR;
             ci.label = Text.literal(tier);
             ci.swatch = () -> draft.colorOf(tier);
-            ci.onClick = () -> cycleColor(tier);
+            ci.onClick = () -> {
+                if (client != null) {
+                    client.setScreen(new ColorSelectScreen(
+                            Text.literal("选择 " + tier + " 的颜色"), ConfigScreen.this, draft, tier));
+                }
+            };
             ci.x = x + col * (colW + COL_GAP);
             ci.y = gridStart + r * (ROW_H + ROW_GAP);
             ci.w = colW;
@@ -399,16 +397,4 @@ public class ConfigScreen extends Screen {
         }
     }
 
-    /** 在预设色板里循环切换某段位颜色。 */
-    private void cycleColor(String tier) {
-        int current = draft.colorOf(tier);
-        int index = -1;
-        for (int i = 0; i < PALETTE.length; i++) {
-            if (PALETTE[i] == current) {
-                index = i;
-                break;
-            }
-        }
-        draft.setColor(tier, PALETTE[(index + 1) % PALETTE.length]);
-    }
 }
