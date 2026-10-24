@@ -1,3 +1,9 @@
+# 1.0.10
+
+修复 1.0.9 引入的混用崩溃：ChatHudMixin 的 @ModifyVariable 误用 argsOnly=true, index=0——非静态方法的第一个参数在局部变量槽位 1（this 在 0 且不可改、argsOnly 也会把 0 判非法），导致启动期又崩。改回 index=1，在方法入口替换消息参数。
+
+Fixed the mixin crash introduced in 1.0.9: ChatHudMixin's @ModifyVariable wrongly used argsOnly=true, index=0 (in a non-static method the first parameter is at local slot 1, this is slot 0 and cannot be modified, and argsOnly also rejects 0), which crashed at startup again. Changed back to index=1 to substitute the message argument at method entry.
+
 # 1.0.9
 
 修复聊天混用导致的启动崩溃：上一版 ChatHudMixin 用 @ModifyArg 配 @At("HEAD") 注入 addMessage，但 @ModifyArg 必须指向真正消费参数的指令，单凭方法头无法确定注入点，会在 Fabric 启动期（混用 apply 阶段）抛 InvalidInjectionException，造成游戏「初始化游戏」阶段直接崩溃、根本进不去。改为 @ModifyVariable（argsOnly = true，在方法入口替换消息参数）。
