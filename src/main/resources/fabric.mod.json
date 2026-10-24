@@ -2,12 +2,13 @@
   "schemaVersion": 1,
   "id": "ylctiertagger",
   "version": "${version}",
-  "name": "YLC Tier Tagger",
+  "name": "YLCTierTagger",
   "description": "在玩家名字旁显示 YueLunarCourt PVP 榜单的段位。",
   "authors": ["天灵"],
   "license": "MIT",
   "icon": "assets/ylctiertagger/icon.png",
   "contact": {
+    "homepage": "https://modrinth.com/mod/ylc-tier-tagger",
     "sources": "https://github.com/tianlingmc/ylc-tier-tagger",
     "issues": "https://github.com/tianlingmc/ylc-tier-tagger/issues"
   },

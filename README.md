@@ -134,7 +134,7 @@ ModMenu 与 cloth-config 改成**可选集成**（`suggests` 而非 `depends`）
 |---|---|
 | 项目 id | `dDefGuBN` |
 | slug | `ylc-tier-tagger` |
-| 公开页 | 审核通过后为 `https://modrinth.com/mod/ylc-tier-tagger`（`/project/` 是开发者控制台路径，不对外） |
+| 公开页 | https://modrinth.com/mod/ylc-tier-tagger |
 | 源码 | https://github.com/tianlingmc/ylc-tier-tagger |
 
 ### 仓库里各文件的用途
