@@ -115,6 +115,11 @@ bash tools/build-all.sh
 - 源码：https://github.com/tianlingmc/ylc-tier-tagger
 - 问题反馈：https://github.com/tianlingmc/ylc-tier-tagger/issues
 
+## 发布
+
+项目描述的正文在 `modrinth-description.md`，复制其内容到 Modrinth 的描述框即可。
+`modrinth.json` 里的是同一份文本，交给 `tools/sync-description.py` 同步。
+
 ## 许可
 
 MIT。模式图标来自 [CnTierTagger](https://github.com/tmdakm/CnTierTagger)（Apache-2.0），详见 `NOTICE`。
