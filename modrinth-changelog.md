@@ -1,3 +1,9 @@
+# 1.0.8
+
+修复聊天栏在 1.21.11 因修改不可变的 siblings 列表抛出 UnsupportedOperationException，导致聊天包处理失败、客户端被「协议错误」踢出的严重问题——改为重建整条消息树，不再改动已有列表。ESC 暂停菜单（游戏内「模组」按钮）下方新增「PVPTIER 设置」按钮，点击打开设置界面。重做设置界面显示：改为自绘不透明面板，修正严重显示错误（此前为空文字按钮 + 半透明浅字叠加）；文案「回复默认」修正为「恢复默认」；列表式布局参考 AppleSkin 模组。
+
+Fixed a crash where, in 1.21.11, decorating chat messages modified the immutable siblings list and threw UnsupportedOperationException, causing packet handling to fail and the client to be disconnected with a "protocol error" — now the whole message tree is rebuilt instead of mutating existing lists. Added a "PVPTIER 设置" button below the in-game "Mods" button in the ESC pause menu, opening the settings screen. Reworked the settings screen rendering: a self-drawn opaque panel that fixes a severe display bug (previously an empty-text button with a semi-transparent overlay); the label "回复默认" is corrected to "恢复默认"; the list layout follows the AppleSkin mod.
+
 # 1.0.7
 
 重做设置界面：编辑内存草稿、「保存」才写回配置，新增「取消」「回复默认」；顶部标题导航栏与底部确认脚行；优先模式项与模式选择界面显示各模式图标；内容区可滚动（右侧 ↑/↓）适配小屏。修复聊天栏在开了聊天插件的服务器上不显示段位的问题——改为按玩家名组件定位，不再依赖固定的消息结构。
