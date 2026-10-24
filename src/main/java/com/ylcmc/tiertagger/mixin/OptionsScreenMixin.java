@@ -38,7 +38,7 @@ public abstract class OptionsScreenMixin {
         ButtonWidget button = ButtonWidget.builder(Text.literal(BUTTON_LABEL), b -> {
                     MinecraftClient client = MinecraftClient.getInstance();
                     if (client != null) {
-                        client.setScreen(new ConfigScreen(Text.literal(BUTTON_LABEL)));
+                        client.setScreen(new ConfigScreen(Text.literal(BUTTON_LABEL), self));
                     }
                 })
                 .dimensions(8, self.height - 28, 140, 20)

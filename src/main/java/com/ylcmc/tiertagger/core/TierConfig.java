@@ -133,6 +133,36 @@ public class TierConfig {
         com.ylcmc.tiertagger.modmenu.ClothConfigBootstrap.reload();
     }
 
+    /** 把所有可序列化字段从 src 拷到 dst（不动 file / lastModified）。 */
+    private static void copy(TierConfig s, TierConfig d) {
+        d.enabled = s.enabled;
+        d.showOnTab = s.showOnTab;
+        d.showInChat = s.showInChat;
+        d.renderLocation = s.renderLocation;
+        d.selectedMode = s.selectedMode;
+        d.displayRule = s.displayRule;
+        d.HT1 = s.HT1; d.LT1 = s.LT1; d.HT2 = s.HT2; d.LT2 = s.LT2;
+        d.HT3 = s.HT3; d.LT3 = s.LT3; d.HT4 = s.HT4; d.LT4 = s.LT4;
+        d.HT5 = s.HT5; d.LT5 = s.LT5;
+    }
+
+    /** 返回一份与 src 完全相同的副本（不含文件元数据），用于设置界面暂存草稿。 */
+    public static TierConfig snapshotOf(TierConfig src) {
+        TierConfig c = new TierConfig();
+        copy(src, c);
+        return c;
+    }
+
+    /** 把当前所有字段覆盖写入 target（用于「保存」时把草稿写回真实配置）。 */
+    public void copyValuesTo(TierConfig target) {
+        copy(this, target);
+    }
+
+    /** 把所有字段重置为默认值（用于「回复默认」）。 */
+    public void resetToDefaults() {
+        copy(new TierConfig(), this);
+    }
+
     /** 取段位对应的颜色。 */
     public int colorOf(String tier) {
         if (tier == null) return 0xffffff;

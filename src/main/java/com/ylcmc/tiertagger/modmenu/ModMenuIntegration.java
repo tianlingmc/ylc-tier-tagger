@@ -15,6 +15,6 @@ public class ModMenuIntegration implements ModMenuApi {
 
     @Override
     public ConfigScreenFactory<?> getModConfigScreenFactory() {
-        return parent -> new ConfigScreen(Text.literal("PVPTIER 榜单设置"));
+        return parent -> new ConfigScreen(Text.literal("PVPTIER 榜单设置"), parent);
     }
 }

@@ -32,7 +32,7 @@ public class YlcTierCommand {
         root.executes(context -> {
             MinecraftClient client = MinecraftClient.getInstance();
             if (client != null) {
-                client.setScreen(new ConfigScreen(Text.literal("PVPTIER 榜单设置")));
+                client.setScreen(new ConfigScreen(Text.literal("PVPTIER 榜单设置"), client.currentScreen));
             }
             return 1;
         });
