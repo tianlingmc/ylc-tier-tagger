@@ -8,7 +8,8 @@
 - **进程启动时拉一次最新榜单**，进游戏后弹窗告知数据状态（成功显示人数，失败显示原因）
 - 数据取自 PVPTIER 榜单接口，另有本地缓存兜底，缓存写在 `config/ylc-tier-tagger/tier_cache.json`
 - **零前置**：只依赖 Fabric Loader，不需要 fabric-api、cloth-config 或任何其他模组
-- 设置界面有三个入口：游戏内 `/ylctier`、**游戏「选项」界面左下角的「PVPTIER 榜单设置」按钮**、ModMenu 之外的任何方式都不需要
+- **ModMenu / cloth-config 是可选的**：装了就有模组列表里的「配置」按钮和标准的 `/config` 命令，没装也能正常用
+- 设置界面有四个入口：游戏内 `/ylctier`、游戏「选项」界面左下角的「PVPTIER 榜单设置」按钮、ModMenu 里的「配置」按钮、装了 cloth-config 时的 `/config`
 - `/ylctier refresh` 手动重拉，`/ylctier <玩家名>` 查看某人的段位
 
 ## 模式
@@ -19,7 +20,7 @@
 
 ## 配置项
 
-设置在游戏内 `/ylctier` 界面里改，写入 `config/ylc-tier-tagger/settings.json`。
+设置在游戏内 `/ylctier` 界面里改，写入 `config/ylc-tier-tagger.json`。装了 cloth-config 的话两边共用这一个文件。
 
 | 项 | 说明 |
 |---|---|
@@ -49,8 +50,10 @@
 | Fabric Loader | 0.19.3 |
 | Loom | 1.14.10 |
 | Gradle | 9.2.1 |
+| ModMenu（可选） | 17.0.1 |
+| cloth-config（可选） | 21.11.160 |
 
-运行时只依赖 Fabric Loader，编译期另外用到 MC 自带的 Brigadier 与 Gson。
+运行时只依赖 Fabric Loader。ModMenu 与 cloth-config 只在编译期与 remap 时需要，运行时玩家装了才有对应入口，没装不受影响。ModMenu 从 Modrinth 的 Maven 代理拉（`https://api.modrinth.com/maven`），避开官方 maven 仓库在本机连不上的问题。
 
 插件 id 必须写 `net.fabricmc.fabric-loom-remap`：`net.fabricmc.fabric-loom` 是「不 remap」标记插件，会强制关闭混淆，导致 Yarn 映射配不进去。
 
@@ -65,6 +68,12 @@ Loom 1.14 起不再默认启用 mixin 注解处理器，混流目标名由 Loom 
 | cloth-config 的配置界面 | 自绘 `ConfigScreen`，配置用 Gson 存 JSON |
 | cloth-config 的 `/config` 命令 | 自己的 `/ylctier` 命令 |
 
+ModMenu 与 cloth-config 改成**可选集成**（`suggests` 而非 `depends`）：
+
+- ModMenu 集成类实现 `ModMenuApi`，通过 fabric.mod.json 的 `modmenu` entrypoint 注册。Fabric 的 entrypoint 是懒加载的，ModMenu 没装就没人请求这个类型，这个类根本不会被加载，所以零前置环境不受影响。
+- cloth-config 用 `ClothConfigBootstrap` 包一层：先检测 `FabricLoader.getModContainer("cloth-config")`，装了才反射式调用 `AutoConfig.register`。配置类 `ClothConfigAdapter` 直接继承自研的 `TierConfig`，两边读写同一个 `config/ylc-tier-tagger.json`，不会各存一份。
+- 玩家若在 cloth-config 界面改了设置，客户端每 2 秒比对一次配置文件时间戳并重读，两边保持同步。
+
 ## 目录
 
 ```
@@ -77,6 +86,10 @@ src/main/java/com/ylcmc/tiertagger/
   core/TierLabel.java              段位选取与名字拼接
   core/TierConfig.java             配置项与读写
   gui/ConfigScreen.java            自绘设置界面
+  gui/ModeSelectScreen.java        tier 模式选择界面
+  modmenu/ModMenuIntegration.java  ModMenu 可选集成
+  modmenu/ClothConfigAdapter.java  cloth-config 可选集成（继承 TierConfig）
+  modmenu/ClothConfigBootstrap.java  cloth-config 探测与注册
   mixin/MinecraftClientMixin.java  tick 钩子：命令注册、刷新、提示
   mixin/PlayerEntityMixin.java     头顶名牌
   mixin/PlayerListHudMixin.java    Tab 玩家列表

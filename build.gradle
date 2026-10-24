@@ -13,8 +13,10 @@ base {
 }
 
 repositories {
-    // cloth-config 官方仓库
+    // cloth-config 官方仓库（可选集成用）
     maven { url "https://maven.shedaniel.me/" }
+    // Modrinth 的 Maven 代理，用来拉 ModMenu
+    maven { url "https://api.modrinth.com/maven" }
 }
 
 dependencies {
@@ -22,6 +24,11 @@ dependencies {
     mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
     // 只依赖 loader 本身，不需要任何前置模组
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    // 以下两个都是可选集成：仅编译期与 remap 需要，
+    // 玩家装了才有模组列表里的配置按钮 / config 命令，没装也能正常使用
+    modImplementation "maven.modrinth:modmenu:${project.modmenu_version}"
+    modImplementation "me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}"
 }
 
 processResources {

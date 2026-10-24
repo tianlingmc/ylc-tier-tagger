@@ -20,7 +20,11 @@ public class TierConfig {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static TierConfig instance = new TierConfig();
 
-    private Path file;
+    /** 配置文件路径。不参与序列化。 */
+    private transient Path file;
+
+    /** 上次读取时文件的时间戳，用来判断有没有被外部改动。 */
+    private transient long lastModified = 0L;
 
     /** 总开关。 */
     public boolean enabled = true;
@@ -57,14 +61,14 @@ public class TierConfig {
         TierConfig cfg = new TierConfig();
         cfg.file = FabricLoader.getInstance()
                 .getConfigDir()
-                .resolve("ylc-tier-tagger")
-                .resolve("settings.json");
+                .resolve("ylc-tier-tagger.json");
         try {
             if (Files.isRegularFile(cfg.file)) {
                 try (Reader reader = Files.newBufferedReader(cfg.file, StandardCharsets.UTF_8)) {
                     TierConfig loaded = GSON.fromJson(reader, TierConfig.class);
                     if (loaded != null) {
                         loaded.file = cfg.file;
+                        loaded.touch();
                         instance = loaded;
                         return;
                     }
@@ -74,6 +78,38 @@ public class TierConfig {
             System.err.println("[ylc-tier-tagger] 读取配置失败，改用默认值：" + e);
         }
         instance = cfg;
+    }
+
+    /**
+     * 文件被外部改动过就重新读。
+     *
+     * <p>装了 cloth-config 的话，玩家可能在它的界面上改设置，
+     * 那边保存后会写同一个文件，这里跟着同步。
+     */
+    public static void reloadIfChanged() {
+        Path path = instance.file;
+        if (path == null || !Files.isRegularFile(path)) {
+            return;
+        }
+        try {
+            long modified = Files.getLastModifiedTime(path).toMillis();
+            if (modified == instance.lastModified) {
+                return;
+            }
+            load();
+        } catch (Exception e) {
+            System.err.println("[ylc-tier-tagger] 同步配置失败：" + e);
+        }
+    }
+
+    private void touch() {
+        try {
+            if (file != null && Files.isRegularFile(file)) {
+                lastModified = Files.getLastModifiedTime(file).toMillis();
+            }
+        } catch (Exception ignored) {
+            // 时间戳拿不到就当没变
+        }
     }
 
     /** 写回配置文件。 */
@@ -86,9 +122,12 @@ public class TierConfig {
             try (Writer writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
                 GSON.toJson(this, writer);
             }
+            touch();
         } catch (Exception e) {
             System.err.println("[ylc-tier-tagger] 写入配置失败：" + e);
         }
+        // 装了 cloth-config 的话，让它那边也重新读一遍
+        com.ylcmc.tiertagger.modmenu.ClothConfigBootstrap.reload();
     }
 
     /** 取段位对应的颜色。 */

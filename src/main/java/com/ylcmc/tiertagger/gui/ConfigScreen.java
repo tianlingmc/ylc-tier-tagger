@@ -73,12 +73,11 @@ public class ConfigScreen extends Screen {
         y += BUTTON_H + GAP;
 
         addDrawableChild(ButtonWidget.builder(
-                        Text.of("优先模式：" + cfg.selectedMode.label),
+                        Text.of("优先模式：" + cfg.selectedMode.label + "  ▸"),
                         button -> {
-                            TierConfig.Mode[] values = TierConfig.Mode.values();
-                            cfg.selectedMode = values[(cfg.selectedMode.ordinal() + 1) % values.length];
-                            cfg.save();
-                            clearAndInit();
+                            if (client != null) {
+                                client.setScreen(new ModeSelectScreen(Text.of("选择 tier 模式")));
+                            }
                         })
                 .dimensions(x, y, BUTTON_W, BUTTON_H)
                 .build());
@@ -129,6 +128,9 @@ public class ConfigScreen extends Screen {
         context.drawText(textRenderer,
                 Text.of("数据来源：pvptier.ylcmc.top　当前 " + com.ylcmc.tiertagger.client.YlcTierTaggerClient.SERVICE.size() + " 人"),
                 8, 20, 0xaaaaaa, false);
+        context.drawText(textRenderer,
+                Text.of("显示规则为「只用选中的模式」时，只有优先模式有段位才会显示。"),
+                8, 32, 0xaaaaaa, false);
     }
 
     /** 段位名加一个色块。 */

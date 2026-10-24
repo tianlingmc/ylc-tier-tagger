@@ -14,12 +14,19 @@
     ],
     "main": [
       "com.ylcmc.tiertagger.YlcTierTagger"
+    ],
+    "modmenu": [
+      "com.ylcmc.tiertagger.modmenu.ModMenuIntegration"
     ]
   },
   "depends": {
     "fabricloader": ">=${loader_version}",
     "minecraft": "${minecraft_version}",
     "java": ">=21"
+  },
+  "suggests": {
+    "modmenu": "*",
+    "cloth-config": "*"
   },
   "mixins": [
     "ylctiertagger.mixins.json"

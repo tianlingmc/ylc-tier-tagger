@@ -2,6 +2,7 @@ package com.ylcmc.tiertagger.client;
 
 import com.ylcmc.tiertagger.core.TierConfig;
 import com.ylcmc.tiertagger.core.TierService;
+import com.ylcmc.tiertagger.modmenu.ClothConfigBootstrap;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
@@ -34,6 +35,8 @@ public class YlcTierTaggerClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        // 可选集成：装了 cloth-config 就注册一份，共用同一个配置文件
+        ClothConfigBootstrap.register();
         TierConfig.load();
         // 进程启动即拉一次最新数据，本地缓存只作兜底
         SERVICE.bootstrap();
@@ -50,6 +53,11 @@ public class YlcTierTaggerClient implements ClientModInitializer {
         }
 
         ticksSinceJoin++;
+
+        // 玩家可能在 cloth-config 的界面上改了设置，跟着同步一次
+        if (ticksSinceJoin % 40 == 0) {
+            TierConfig.reloadIfChanged();
+        }
 
         // 进游戏后弹一次提示，说明数据状态
         if (!notified && (SERVICE.status() != TierService.Status.LOADING || ticksSinceJoin > NOTIFY_WAIT_TICKS)) {
