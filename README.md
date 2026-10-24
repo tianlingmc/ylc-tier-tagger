@@ -117,8 +117,9 @@ bash tools/build-all.sh
 
 ## 发布
 
-项目描述的正文在 `modrinth-description.md`，复制其内容到 Modrinth 的描述框即可。
-`modrinth.json` 里的是同一份文本，交给 `tools/sync-description.py` 同步。
+- 项目描述的正文：`modrinth-description.md`（中英双语），复制其内容到 Modrinth 的描述框即可。
+  `modrinth.json` 里的是同一份文本，交给 `tools/sync-description.py` 同步。
+- 版本更新日志：`modrinth-changelog.md`，复制其内容到 Modrinth 该版本的更新日志框。
 
 ## 许可
 
