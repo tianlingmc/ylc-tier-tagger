@@ -71,7 +71,7 @@ ModMenu 与 Cloth Config 属于可选依赖，装上之后会多出对应的入�
 
 | 客户端 | 需要的 Java | 下载哪个文件 |
 |---|---|---|
-| 1.20.5 ~ 1.21.11 | Java 21 | `YLCTierTagger-<版本>-fabric.jar` |
+| 1.20.5 ~ 1.21.11 | Java 21 | `YLCTierTagger-<版本>-fabric-mc1.21.11.jar` |
 | 1.20.1 ~ 1.20.4 | Java 17 | `YLCTierTagger-<版本>-fabric-mc1.20.4.jar` |
 
 1.20.5 之前的 Minecraft 运行在 Java 17 上，文件格式与新版不通用，因此单独提供一份。
@@ -97,7 +97,8 @@ ModMenu 与 Cloth Config 属于可选依赖，装上之后会多出对应的入�
 ./gradlew build
 ```
 
-产物在 `build/libs/`，命名为 `YLCTierTagger-<版本号>-fabric.jar`。
+产物在 `build/libs/`，命名为 `YLCTierTagger-<版本号>-fabric-mc<目标版本>.jar`，
+文件名里的 MC 版本由构建时自动填上。
 版本号采用 `大版本.小版本.修订号`，第三位会在每次构建时自动加一。
 
 需要同时产出 1.20.1 ~ 1.20.4 的包时：
