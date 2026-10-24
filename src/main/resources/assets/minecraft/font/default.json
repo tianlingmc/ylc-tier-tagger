@@ -1,0 +1,75 @@
+{
+  "providers": [
+    {
+      "type": "reference",
+      "id": "minecraft:include/space"
+    },
+    {
+      "type": "reference",
+      "id": "minecraft:include/default",
+      "filter": {
+        "uniform": false
+      }
+    },
+    {
+      "type": "reference",
+      "id": "minecraft:include/unifont"
+    },
+    {
+      "type": "bitmap",
+      "file": "ylctiertagger:fonts/axe.png",
+      "ascent": 8,
+      "height": 8,
+      "chars": ["\uE701"]
+    },
+    {
+      "type": "bitmap",
+      "file": "ylctiertagger:fonts/mace.png",
+      "ascent": 8,
+      "height": 8,
+      "chars": ["\uE702"]
+    },
+    {
+      "type": "bitmap",
+      "file": "ylctiertagger:fonts/npot.png",
+      "ascent": 8,
+      "height": 8,
+      "chars": ["\uE703"]
+    },
+    {
+      "type": "bitmap",
+      "file": "ylctiertagger:fonts/pot.png",
+      "ascent": 8,
+      "height": 8,
+      "chars": ["\uE704"]
+    },
+    {
+      "type": "bitmap",
+      "file": "ylctiertagger:fonts/smp.png",
+      "ascent": 8,
+      "height": 8,
+      "chars": ["\uE705"]
+    },
+    {
+      "type": "bitmap",
+      "file": "ylctiertagger:fonts/sword.png",
+      "ascent": 8,
+      "height": 8,
+      "chars": ["\uE706"]
+    },
+    {
+      "type": "bitmap",
+      "file": "ylctiertagger:fonts/buhc.png",
+      "ascent": 8,
+      "height": 8,
+      "chars": ["\uE707"]
+    },
+    {
+      "type": "bitmap",
+      "file": "ylctiertagger:fonts/vanilla.png",
+      "ascent": 8,
+      "height": 8,
+      "chars": ["\uE708"]
+    }
+  ]
+}

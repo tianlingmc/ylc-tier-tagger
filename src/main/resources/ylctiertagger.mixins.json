@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "com.ylcmc.tiertagger.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "refmap": "ylctiertagger.refmap.json",
+  "client": [
+    "PlayerEntityMixin",
+    "PlayerListHudMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

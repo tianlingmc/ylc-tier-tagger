@@ -1,7 +1,7 @@
 package com.ylcmc.tiertagger.core;
 
+import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
 
 import java.util.List;
@@ -91,13 +91,14 @@ public final class TierLabel {
             return original;
         }
 
-        Text icon = Text.literal(String.valueOf(mode.icon)).formatted(Formatting.WHITE);
-        Text tier = Text.literal(selected.tier).styled(style -> style.withColor(TextColor.fromRgb(cfg.colorOf(selected.tier))));
-        Text separator = Text.literal(" | ").formatted(Formatting.GRAY);
+        MutableText icon = Text.of(String.valueOf(mode.icon)).copy().styled(s -> s.withColor(Formatting.WHITE));
+        MutableText tier = Text.of(selected.tier).copy().styled(s -> s.withColor(cfg.colorOf(selected.tier)));
+        MutableText separator = Text.of(" | ").copy().styled(s -> s.withColor(Formatting.GRAY));
+        MutableText space = Text.of(" ").copy();
 
         if (cfg.renderLocation == TierConfig.RenderLocation.LEFT) {
-            return icon.copy().append(" ").append(tier).append(separator).append(original);
+            return icon.copy().append(space).append(tier).append(separator).append(original);
         }
-        return original.copy().append(separator).append(tier).append(" ").append(icon);
+        return original.copy().append(separator).append(tier).append(space).append(icon);
     }
 }
