@@ -107,14 +107,17 @@ provided as a separate file.
 
 ## 数据 / Data
 
-段位数据取自 PVPTIER 榜单接口。
+段位数据取自 PVPTIER 榜单接口，即我们自己的站点 pvptier.ylcmc.top（YueLunarCourt 服务器），
+与第三方站点 pvptier.com 没有任何关系，请勿混淆。
 
 - 每次启动游戏会自动同步一次
 - 同步结果缓存在游戏的 config 目录中，站点临时不可用时会继续沿用上一次的数据
 - 同步失败时会在游戏内说明原因，并提示可以用 `/ylctier refresh` 手动重试
 - 同步在后台进行，不会影响游戏启动
 
-The tier data is taken from the PVPTIER leaderboard API.
+The tier data is taken from the PVPTIER leaderboard API, which is our own site
+pvptier.ylcmc.top (the YueLunarCourt server). It is not affiliated with the
+third-party site pvptier.com, so please do not confuse the two.
 
 - It is synced once automatically whenever the game starts
 - The result is cached in the config folder, and the last known data keeps being used

@@ -82,7 +82,8 @@ ModMenu 与 Cloth Config 属于可选依赖，装上之后会多出对应的入�
 
 ## 数据
 
-段位数据取自 PVPTIER 榜单接口。
+段位数据取自 PVPTIER 榜单接口，即我们自己的站点 pvptier.ylcmc.top（YueLunarCourt 服务器），
+与第三方站点 pvptier.com 没有任何关系，请勿混淆。
 
 - 每次启动游戏会自动同步一次
 - 同步结果缓存在游戏的 config 目录中，站点临时不可用时会继续沿用上一次的数据
