@@ -60,6 +60,17 @@ public class ConfigScreen extends Screen {
         y += BUTTON_H + GAP;
 
         addDrawableChild(ButtonWidget.builder(
+                        Text.of("聊天栏显示：" + (cfg.showInChat ? "开" : "关")),
+                        button -> {
+                            cfg.showInChat = !cfg.showInChat;
+                            cfg.save();
+                            clearAndInit();
+                        })
+                .dimensions(x, y, BUTTON_W, BUTTON_H)
+                .build());
+        y += BUTTON_H + GAP;
+
+        addDrawableChild(ButtonWidget.builder(
                         Text.of("显示位置：" + cfg.renderLocation.label),
                         button -> {
                             cfg.renderLocation = cfg.renderLocation == TierConfig.RenderLocation.LEFT

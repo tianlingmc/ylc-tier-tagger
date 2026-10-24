@@ -4,6 +4,7 @@
   "compatibilityLevel": "JAVA_21",
   "refmap": "ylctiertagger.refmap.json",
   "client": [
+    "ChatHudMixin",
     "MinecraftClientMixin",
     "OptionsScreenMixin",
     "PlayerEntityMixin",

@@ -75,6 +75,23 @@ public final class TierLabel {
     }
 
     /**
+     * 生成「图标 + 段位」这一小段标签。
+     *
+     * @return 模式不在注册表里时返回 null
+     */
+    public static MutableText badge(Selected selected, TierConfig cfg) {
+        if (selected == null) return null;
+        TierRegistry.Mode mode = TierRegistry.get(selected.modeKey);
+        if (mode == null) return null;
+
+        MutableText badge = Text.of(String.valueOf(mode.icon)).copy()
+                .styled(s -> s.withColor(Formatting.WHITE));
+        badge.append(Text.of(selected.tier).copy()
+                .styled(s -> s.withColor(cfg.colorOf(selected.tier))));
+        return badge;
+    }
+
+    /**
      * 把段位标签拼到原始名字上。
      *
      * @param original 原始玩家名
@@ -91,8 +108,10 @@ public final class TierLabel {
             return original;
         }
 
-        MutableText icon = Text.of(String.valueOf(mode.icon)).copy().styled(s -> s.withColor(Formatting.WHITE));
-        MutableText tier = Text.of(selected.tier).copy().styled(s -> s.withColor(cfg.colorOf(selected.tier)));
+        MutableText icon = Text.of(String.valueOf(mode.icon)).copy()
+                .styled(s -> s.withColor(Formatting.WHITE));
+        MutableText tier = Text.of(selected.tier).copy()
+                .styled(s -> s.withColor(cfg.colorOf(selected.tier)));
         MutableText separator = Text.of(" | ").copy().styled(s -> s.withColor(Formatting.GRAY));
         MutableText space = Text.of(" ").copy();
 

@@ -32,6 +32,9 @@ public class TierConfig {
     /** 是否在 Tab 玩家列表里显示段位。 */
     public boolean showOnTab = true;
 
+    /** 是否在聊天消息的玩家名后显示段位。 */
+    public boolean showInChat = true;
+
     /** 段位显示在名字左边还是右边。 */
     public RenderLocation renderLocation = RenderLocation.LEFT;
 

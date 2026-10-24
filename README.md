@@ -4,7 +4,7 @@
 
 ## 功能
 
-- 头顶名牌与 Tab 玩家列表，在玩家名旁显示「模式图标 + 段位」
+- 头顶名牌、Tab 玩家列表、**聊天栏里的玩家名**，都带上「模式图标 + 段位」
 - **进程启动时拉一次最新榜单**，进游戏后弹窗告知数据状态（成功显示人数，失败显示原因）
 - 数据取自 PVPTIER 榜单接口，另有本地缓存兜底，缓存写在 `config/ylc-tier-tagger/tier_cache.json`
 - **零前置**：只依赖 Fabric Loader，不需要 fabric-api、cloth-config 或任何其他模组
@@ -26,6 +26,7 @@
 |---|---|
 | `enabled` | 总开关 |
 | `showOnTab` | 是否在 Tab 玩家列表显示 |
+| `showInChat` | 是否在聊天消息的玩家名后显示 |
 | `renderLocation` | 段位显示在名字左侧或右侧 |
 | `selectedMode` | 优先使用的模式 |
 | `displayRule` | 只用选中的模式 / 只显示最高的档位 / 优先选中的模式 |
@@ -84,6 +85,7 @@ src/main/java/com/ylcmc/tiertagger/
   core/TierService.java            接口拉取与本地缓存
   core/TierRegistry.java           模式注册表与段位强度序
   core/TierLabel.java              段位选取与名字拼接
+  core/ChatTagger.java             聊天消息玩家名加标签
   core/TierConfig.java             配置项与读写
   gui/ConfigScreen.java            自绘设置界面
   gui/ModeSelectScreen.java        tier 模式选择界面
@@ -92,6 +94,7 @@ src/main/java/com/ylcmc/tiertagger/
   modmenu/ClothConfigBootstrap.java  cloth-config 探测与注册
   mixin/MinecraftClientMixin.java  tick 钩子：命令注册、刷新、提示
   mixin/PlayerEntityMixin.java     头顶名牌
+  mixin/ChatHudMixin.java          聊天栏玩家名
   mixin/PlayerListHudMixin.java    Tab 玩家列表
 tools/make-icon.py                 由 modicon.jpg 生成 mod 图标
 ```
