@@ -1,5 +1,6 @@
 package com.ylcmc.tiertagger.client;
 
+import com.mojang.brigadier.CommandDispatcher;
 import com.ylcmc.tiertagger.core.TierConfig;
 import com.ylcmc.tiertagger.core.TierService;
 import com.ylcmc.tiertagger.modmenu.ClothConfigBootstrap;
@@ -32,9 +33,6 @@ public class YlcTierTaggerClient implements ClientModInitializer {
 
     /** 上一次已经提示过的状态，用来避免重复刷屏。 */
     private static TierService.Status lastNotified = null;
-
-    /** 上一次注册命令时用的网络处理器，换服后需要重新注册。 */
-    private static ClientPlayNetworkHandler registeredHandler = null;
 
     @Override
     public void onInitializeClient() {
@@ -95,15 +93,28 @@ public class YlcTierTaggerClient implements ClientModInitializer {
         notifyStatus(client, status);
     }
 
-    /** 客户端命令注册到游戏自带的 dispatcher 上。 */
+    /**
+     * 客户端命令注册到游戏自带的 dispatcher 上。
+     *
+     * <p>不能只按「换没换网络处理器」判断：服务端每次下发命令树（进服、切服、权限刷新）
+     * 都会通过 {@code onCommandTree} 把 dispatcher 换成一个新实例，之前注册的指令会被
+     * 整个冲掉，表现就是输入 /ylctier 提示指令不存在。所以这里直接看根结点上有没有
+     * 我们的指令，缺了就重新注册一次。
+     */
     private static void registerCommand(MinecraftClient client) {
         ClientPlayNetworkHandler handler = client.getNetworkHandler();
-        if (handler == null || handler == registeredHandler) {
+        if (handler == null) {
             return;
         }
         try {
-            handler.getCommandDispatcher().register(YlcTierCommand.build());
-            registeredHandler = handler;
+            CommandDispatcher<?> dispatcher = handler.getCommandDispatcher();
+            if (dispatcher == null) {
+                return;
+            }
+            if (dispatcher.getRoot().getChild(YlcTierCommand.NAME) != null) {
+                return;
+            }
+            dispatcher.register(YlcTierCommand.build());
         } catch (Exception e) {
             System.err.println("[ylc-tier-tagger] 注册客户端命令失败：" + e);
         }
@@ -131,7 +142,7 @@ public class YlcTierTaggerClient implements ClientModInitializer {
                 break;
             }
             case LOADING:
-                showToast(client, title, "正在同步排行榜，网络较慢时可稍后用 /ylctier refresh 重试");
+                showToast(client, title, "正在同步排行榜，网络较慢时可稍后用 /ylctier retrieve 重试");
                 break;
             default:
                 break;
@@ -148,7 +159,7 @@ public class YlcTierTaggerClient implements ClientModInitializer {
         } else {
             base = "没有可用的本地缓存，段位标签暂时不会显示";
         }
-        return base + "。可输入 /ylctier refresh 手动重试。";
+        return base + "。可输入 /ylctier retrieve 手动重试。";
     }
 
     /**
