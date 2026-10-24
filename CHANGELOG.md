@@ -2,86 +2,9 @@
 
 本项目的版本号采用 `大版本.小版本.修订号`。
 
-## 1.1.1
-
-- 修复普通聊天消息（玩家自己打的字）拿不到段位标签：客户端是用 `Text.translatable("chat.type.text", 名字, 内容)` 拼这类消息的，名字存在 `TranslatableTextContent` 的 args 里、不在 siblings 里，原先只遍历 siblings 的查找方式必然漏掉；新增对翻译组件参数的替换处理
-- 表现对比：进服广播、系统提示能正常加标签，而 `玩家名: 内容` 形式的发言完全没标签（这一类消息树截然不同，服务端拼好的整棵树能命中，客户端本地拼的就命中不了）
-- 参数匹配做了保守处理：优先「arg 文本正好等于某个玩家名」，其次才用「包含玩家名」并取文本最短的那个，避免把消息正文里的名字误判成说话人
-
-- Fixed missing tier tags on regular chat messages (text typed by players): the client composes those with `Text.translatable("chat.type.text", name, content)`, so the name lives in the `TranslatableTextContent` args rather than in siblings, and the old siblings-only walk always missed it; added replacement support for translatable arguments
-- Symptom: join broadcasts and system messages were tagged correctly while `name: message` chat lines got nothing, because the two have completely different message trees (server-composed trees are hit, locally composed ones were not)
-- Argument matching is deliberately conservative: prefers an arg whose text exactly equals a player name, otherwise uses the shortest arg containing one, so message bodies are less likely to be mistaken for the sender
-- 修复设置页所有文字不可见：MC 的颜色是 ARGB，源码里普遍写成 `0xRRGGBB`（alpha 为 0）等于全透明，导致文字、分割线、段位色块一个都画不出来，而带 `0xff` 的行底色照常显示——这正是截图里「有色块、没文字」的原因；已统一补齐 alpha
-- 修复聊天栏与玩家列表里的段位文字可能全透明（同一个 alpha 问题）：配置里存的是 RGB，渲染前补上 alpha
-- 设置页滚动从「上下箭头按钮」改为原生风格的滚动条（轨道 + 滑块）并支持滚轮，方向与原版 `ScrollableWidget` 一致
-- 说明：拖拽滚动暂不支持——`mouseDragged` / `mouseClicked` 的签名在 1.20.x（`double,double,int`）与 1.21.11（`Click`）之间不兼容，单份源码无法同时覆盖；`mouseScrolled` 四个参数的签名两边一致，所以滚轮是安全的
-
-- Fixed the config screen showing no text at all: MC colours are ARGB and the code mostly wrote `0xRRGGBB` (alpha 0, i.e. fully transparent), so text, separators and tier swatches were never drawn while the row background (which had `0xff`) showed normally - exactly the "bars without text" seen in screenshots; alpha is now set everywhere
-- Fixed tier text possibly rendering fully transparent in chat and in the player list (same alpha issue): config stores RGB, alpha is added before rendering
-- Config screen scrolling changed from up/down arrow buttons to a vanilla-style scrollbar (track + thumb) with mouse-wheel support, matching vanilla `ScrollableWidget` direction
-- Note: drag-to-scroll is not supported yet - `mouseDragged` / `mouseClicked` signatures differ between 1.20.x (`double,double,int`) and 1.21.11 (`Click`), so one source file cannot cover both; `mouseScrolled` has the same 4-parameter signature on both and is therefore safe
-
-## 1.1.0
-
-- 修复 1.20.1–1.20.4（Java 17）构建启动即崩：mixin 配置里 `compatibilityLevel` 误写成 `JAVA_21`，Java 17 运行时拒绝应用，导致所有混用全部失效；改为 `JAVA_17`，两个版本范围统一可跑
-- 修复聊天栏段位装饰引发的两次启动崩溃：先是用 `@ModifyArg` 配 `@At("HEAD")`（不是合法注入点），后是 `@ModifyVariable` 误用 `argsOnly + index=0`（槽位 0 是 `this` 且不可改）；最终用 `@ModifyVariable` 正确槽位（非静态方法第一个参数在槽位 1）替换消息参数
-- 修正段位 `LT5` 与 `LT4` 默认颜色重复的问题（此前两个档位颜色一样）
-- 修正 `fabric.mod.json` 描述里的转义错误（双反斜杠 `n` 变成了字面反斜杠 n），并更正支持版本范围说明
-- 说明：1.21.11 数据接口偶发返回非 JSON（瞬断或网关），已做 3 次重试与本地缓存兜底，不会因此崩溃或卡启动
-
-- Fixed a startup crash on the 1.20.1–1.20.4 (Java 17) build: the mixin config's `compatibilityLevel` was wrongly `JAVA_21`, which the Java 17 runtime refuses, breaking every mixin; changed to `JAVA_17` so both version ranges run
-- Fixed two startup crashes caused by chat tag decoration: first `@ModifyArg` with `@At("HEAD")` (not a valid injection point), then `@ModifyVariable` with `argsOnly + index=0` (slot 0 is `this` and cannot be modified); now uses `@ModifyVariable` with the correct slot (first parameter of a non-static method is at slot 1) to substitute the message argument
-- Fixed `LT5` sharing the same default colour as `LT4` (two tiers looked identical)
-- Fixed a bad escape in `fabric.mod.json` description (doubled backslash-n rendered as literal text) and corrected the supported-version note
-- Note: the 1.21.11 data API occasionally returns non-JSON (brief outage / gateway); the mod already retries 3 times and falls back to the local cache, so it never crashes or hangs on this
-
-## 1.0.10
-
-- 修复 1.0.9 引入的混用崩溃：`ChatHudMixin` 的 `@ModifyVariable` 误用了 `argsOnly = true, index = 0`——非静态方法的第一个参数在局部变量槽位 1（`this` 在 0 且不允许改、`argsOnly` 也会把 0 判非法），导致启动期又崩。改回 `index = 1`，在方法入口替换消息参数
-
-- Fixed the mixin crash introduced in 1.0.9: `ChatHudMixin`'s `@ModifyVariable` wrongly used `argsOnly = true, index = 0`; in a non-static method the first parameter lives at local slot 1 (`this` is slot 0 and cannot be modified, and `argsOnly` also rejects 0), which crashed at startup again. Changed back to `index = 1` to substitute the message argument at method entry
-
-## 1.0.9
-
-- 修复聊天混用导致的启动崩溃：上一版 `ChatHudMixin` 用 `@ModifyArg` 配 `@At("HEAD")` 注入 `addMessage`，但 `@ModifyArg` 必须指向真正消费参数的指令，单凭方法头无法确定注入点，会在 Fabric 启动期（混用 apply 阶段）抛 `InvalidInjectionException`，造成游戏「初始化游戏」阶段直接崩溃、根本进不去。改为 `@ModifyVariable`（`argsOnly = true`，在方法入口替换消息参数）
-
-- Fixed a startup crash caused by the chat mixin: the previous `ChatHudMixin` used `@ModifyArg` with `@At("HEAD")` on `addMessage`, but `@ModifyArg` requires a real argument-consuming instruction, so it threw `InvalidInjectionException` during Fabric's mixin apply at startup and the game crashed before reaching the title screen. Replaced with `@ModifyVariable` (`argsOnly = true`, which substitutes the message argument at method entry)
-
-## 1.0.8
-
-- 修复聊天栏在 1.21.11 因修改不可变的 `siblings` 列表抛出 `UnsupportedOperationException`，导致聊天包处理失败、客户端被「协议错误」踢出的问题（改为重建整条消息树，不再改动已有列表）
-- ESC 暂停菜单（游戏内「模组」按钮）下方新增「PVPTIER 设置」按钮，点击打开设置界面
-- 重做设置界面显示：改为自绘不透明面板，修正严重显示错误（此前为空文字按钮 + 半透明浅字叠加）；文案「回复默认」修正为「恢复默认」；列表式布局参考 AppleSkin 模组
-
-- Fixed a crash where, in 1.21.11, decorating chat messages modified the immutable `siblings` list and threw `UnsupportedOperationException`, causing packet handling to fail and the client to be disconnected with a "protocol error" (now the whole message tree is rebuilt instead of mutating existing lists)
-- Added a "PVPTIER 设置" button below the in-game "Mods" button in the ESC pause menu, opening the settings screen
-- Reworked the settings screen rendering: a self-drawn opaque panel that fixes a severe display bug (previously an empty-text button with a semi-transparent overlay); the label "回复默认" is corrected to "恢复默认"; the list layout follows the AppleSkin mod
-
-## 1.0.7
-
-- 重做设置界面：改为编辑内存草稿，「保存」才写回配置；新增「取消」「回复默认」
-- 设置界面新增顶部标题导航栏与底部确认脚行
-- 设置界面「优先模式」项与模式选择界面均显示各模式的图标
-- 设置界面内容区可滚动（右侧 ↑/↓ 按钮），适配窗口偏小的屏幕
-- 修复聊天栏在开了聊天插件的服务器上不显示段位的问题（改为按玩家名组件定位，不再依赖固定的消息结构）
-
-- Reworked the settings screen: it now edits an in-memory draft and only writes to disk on "Save"; added "Cancel" and "Reset to defaults"
-- The settings screen now has a top title bar and a bottom confirmation row
-- The preferred-mode row and the mode picker now show each mode's icon
-- The settings content scrolls (↑/↓ buttons on the right) to fit small windows
-- Fixed tiers not showing in chat on servers running chat plugins (locate the player-name component instead of relying on a fixed message layout)
-
-## 1.0.6
-
-- 修复游戏初始化时选项界面按钮注入导致的崩溃
-- 明确榜单数据来自 pvptier.ylcmc.top，与 pvptier.com 无关
-
-- Fixed a crash on startup caused by the options-screen button injection
-- Clarified that the tier data comes from pvptier.ylcmc.top, unrelated to pvptier.com
-
 ## 1.0.0
 
-首个正式版本。
+首个公开版本。
 
 ### 显示
 
@@ -93,10 +16,11 @@
 ### 设置
 
 - 游戏内输入 `/ylctier` 打开设置界面
-- 选项界面左下角有「PVPTIER 榜单设置」按钮
+- ESC 暂停菜单（游戏内「模组」按钮）下方有「PVPTIER 设置」按钮
 - 装有 ModMenu 时，模组列表里有「配置」按钮
 - 装有 Cloth Config 时可用 `/config` 命令
-- 可切换优先模式、显示规则与显示位置
+- 设置页编辑的是内存草稿，只有点「保存」才写回配置，另有「取消」「恢复默认」
+- 设置页内容区用原生风格的滚动条，支持滚轮
 
 ### 数据
 
@@ -113,15 +37,52 @@
 - 不需要任何前置模组
 - ModMenu 与 Cloth Config 为可选依赖
 
-## 1.0.0 之前
+### 稳定性
 
-测试阶段（0.1.x）。主要变化：
+- 聊天栏对两类消息都能正确加标签：服务端拼好的广播与系统提示，以及客户端本地用
+  `Text.translatable("chat.type.text", 名字, 内容)` 拼出来的普通发言（后者的名字存在翻译
+  组件的参数里、不在兄弟节点里，两种结构都已覆盖）
+- 消息树是重建而不是就地修改，不会触碰 1.21.x 里不可变的 `siblings` 列表，也就不会因
+  协议错误被踢出
+- 两个版本范围的构建都能正常启动（mixin 的 `compatibilityLevel` 与各自运行的 Java 匹配）
+- 榜单接口偶发返回非 JSON（瞬断或网关）时会自动重试 3 次并回退到本地缓存，不会崩溃或卡启动
 
-- 首个可运行的版本
-- 取消前置模组依赖，改为零前置
-- 增加游戏选项界面的设置入口
-- 模组图标改用原始图片，完整显示背景与文字
-- 聊天栏玩家名也显示段位
-- 同时提供 1.20.1 ~ 1.20.4 与 1.20.5 ~ 1.21.11 两个版本
-- 版本号与安装包命名规范化
-- 补齐 Modrinth 所需的元数据与自动发版流程
+The first public release.
+
+### Display
+
+- The tier is shown on nametags, in the tab list and in chat
+- In chat the tier can be placed before or after the name
+- Every mode has its own icon, tiers range from `HT1` to `HT5` and `LT1` to `LT5`
+- The colour of every tier can be adjusted
+
+### Settings
+
+- Open the settings screen with `/ylctier` in game
+- A "PVPTIER 设置" button sits below the in-game "Mods" button in the ESC pause menu
+- With ModMenu installed there is a "Config" button in the mod list
+- With Cloth Config installed the standard `/config` command is available
+- The settings screen edits an in-memory draft and only writes to disk on "Save"; "Cancel" and "Reset to defaults" are available too
+- The settings content uses a vanilla-style scrollbar and supports the mouse wheel
+
+### Data
+
+- The leaderboard is synced once whenever the game starts
+- If the sync fails, the reason is given along with whether the last known data is used and how to retry manually
+- A hint is also shown when the sync takes a while
+- The sync runs in the background and does not affect starting the game
+- The local cache lives in the config folder of the game
+
+### Compatibility
+
+- 1.20.5 to 1.21.11, requires Java 21
+- 1.20.1 to 1.20.4, requires Java 17
+- No other mods are required
+- ModMenu and Cloth Config are optional
+
+### Stability
+
+- Chat tagging covers both message shapes: broadcasts and system hints composed by the server, and regular chat that the client composes locally with `Text.translatable("chat.type.text", name, content)` (there the name lives in the translatable arguments rather than in the siblings)
+- The message tree is rebuilt instead of being mutated in place, so the immutable `siblings` list on 1.21.x is never touched and the client is not disconnected with a protocol error
+- Both version ranges start normally (the mixin `compatibilityLevel` matches the Java each of them runs on)
+- When the leaderboard API occasionally returns non-JSON (brief outage or gateway), the mod retries 3 times and falls back to the local cache instead of crashing or hanging
