@@ -2,6 +2,12 @@
 
 本项目的版本号采用 `大版本.小版本.修订号`。
 
+## 1.0.9
+
+- 修复聊天混用导致的启动崩溃：上一版 `ChatHudMixin` 用 `@ModifyArg` 配 `@At("HEAD")` 注入 `addMessage`，但 `@ModifyArg` 必须指向真正消费参数的指令，单凭方法头无法确定注入点，会在 Fabric 启动期（混用 apply 阶段）抛 `InvalidInjectionException`，造成游戏「初始化游戏」阶段直接崩溃、根本进不去。改为 `@ModifyVariable`（`argsOnly = true`，在方法入口替换消息参数）
+
+- Fixed a startup crash caused by the chat mixin: the previous `ChatHudMixin` used `@ModifyArg` with `@At("HEAD")` on `addMessage`, but `@ModifyArg` requires a real argument-consuming instruction, so it threw `InvalidInjectionException` during Fabric's mixin apply at startup and the game crashed before reaching the title screen. Replaced with `@ModifyVariable` (`argsOnly = true`, which substitutes the message argument at method entry)
+
 ## 1.0.8
 
 - 修复聊天栏在 1.21.11 因修改不可变的 `siblings` 列表抛出 `UnsupportedOperationException`，导致聊天包处理失败、客户端被「协议错误」踢出的问题（改为重建整条消息树，不再改动已有列表）
