@@ -65,8 +65,8 @@ public final class ChatTagger {
             return text;
         }
 
-        // 重建整条消息树，在名字组件处插入「徽章 + 空格 + 名字」（或反序）。
-        return rebuild(text, hit, badge, cfg.renderLocation);
+        // 重建整条消息树，在名字组件处插入「徽章 | 名字」（或反序）。
+        return rebuild(text, hit, badge, cfg);
     }
 
     /** 命中结果：名字组件、它的父组件、在父里的下标、对应的玩家记录。 */
@@ -90,30 +90,20 @@ public final class ChatTagger {
      * 递归重建消息树。遇到命中的名字节点时，把它包成「徽章 + 空格 + 名字」的新组件返回；
      * 其它节点只做浅拷贝（保留自身文字、样式）并把子节点递归重建后挂上。
      */
-    private static Text rebuild(Text node, NameHit hit, MutableText badge, TierConfig.RenderLocation loc) {
+    private static Text rebuild(Text node, NameHit hit, MutableText badge, TierConfig cfg) {
         MutableText copy = node.copyContentOnly();
 
         if (node == hit.node) {
             // 名字节点：先完整保留它自己（含自身子节点），再连同徽章一起包起来。
+            // 拼接格式统一交给 TierLabel.combine，与 Tab 列表、头顶名牌保持一致。
             for (Text s : node.getSiblings()) {
-                copy.append(rebuild(s, hit, badge, loc));
+                copy.append(rebuild(s, hit, badge, cfg));
             }
-            MutableText wrapper = Text.literal("").setStyle(Style.EMPTY);
-            MutableText space = Text.literal(" ");
-            if (loc == TierConfig.RenderLocation.RIGHT) {
-                wrapper.append(copy);
-                wrapper.append(space);
-                wrapper.append(badge);
-            } else {
-                wrapper.append(badge);
-                wrapper.append(space);
-                wrapper.append(copy);
-            }
-            return wrapper;
+            return TierLabel.combine(copy, badge, cfg);
         }
 
         for (Text s : node.getSiblings()) {
-            copy.append(rebuild(s, hit, badge, loc));
+            copy.append(rebuild(s, hit, badge, cfg));
         }
         return copy;
     }
@@ -256,7 +246,7 @@ public final class ChatTagger {
         Text name = original instanceof Text t ? t : Text.literal(String.valueOf(original));
 
         Object[] newArgs = args.clone();
-        newArgs[index] = wrapName(name, badge, cfg.renderLocation);
+        newArgs[index] = TierLabel.combine(name, badge, cfg);
 
         return Text.translatable(ttc.getKey(), newArgs).setStyle(node.getStyle());
     }
@@ -264,31 +254,33 @@ public final class ChatTagger {
     /**
      * 选出最像「发送者名字」的那个 arg 下标。
      *
-     * <p>优先「渲染文本正好等于某个玩家名」，其次才是「包含某玩家名」，
-     * 后者取最短的那个（说话人名字通常比消息正文短），尽量别误伤正文。
+     * <p>优先「渲染文本正好等于某个玩家名」；其次按参数顺序取第一个「包含某玩家名」的。
+     * 聊天模板 chat.type.text 的发送者是第一个参数，所以取「第一个命中」而不是
+     * 「最短的那个」——按最短取的话，消息正文里提到别的玩家时会被选中，
+     * 标签就跑到整条消息后面去了。
      *
      * @return 命中返回下标，没有返回 -1
      */
     private static int pickNameArg(Object[] args) {
-        int exact = -1;
-        int contains = -1;
-        int containsLen = Integer.MAX_VALUE;
-
         for (int i = 0; i < args.length; i++) {
             String s = argString(args[i]);
             if (s == null || s.isEmpty() || s.length() > 64) {
                 continue;
             }
             if (YlcTierTaggerClient.SERVICE.find(s) != null) {
-                exact = i;
-                break;
-            }
-            if (findEntry(s) != null && s.length() < containsLen) {
-                contains = i;
-                containsLen = s.length();
+                return i;
             }
         }
-        return exact >= 0 ? exact : contains;
+        for (int i = 0; i < args.length; i++) {
+            String s = argString(args[i]);
+            if (s == null || s.isEmpty() || s.length() > 64) {
+                continue;
+            }
+            if (findEntry(s) != null) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     /** 取出 arg 的渲染文本。只认 Text 与 String，其它类型不参与匹配。 */
@@ -302,19 +294,4 @@ public final class ChatTagger {
         return null;
     }
 
-    /** 把徽章拼到名字两侧之一，名字本身（含悬浮事件）整体保留。 */
-    private static Text wrapName(Text original, MutableText badge, TierConfig.RenderLocation loc) {
-        MutableText wrapper = Text.literal("").setStyle(Style.EMPTY);
-        MutableText space = Text.literal(" ");
-        if (loc == TierConfig.RenderLocation.RIGHT) {
-            wrapper.append(original);
-            wrapper.append(space);
-            wrapper.append(badge);
-        } else {
-            wrapper.append(badge);
-            wrapper.append(space);
-            wrapper.append(original);
-        }
-        return wrapper;
-    }
 }

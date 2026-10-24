@@ -49,7 +49,7 @@ public class YlcTierCommand {
                 .executes(context -> {
                     MinecraftClient client = MinecraftClient.getInstance();
                     if (client != null) {
-                        client.setScreen(new ConfigScreen(Text.literal("PVPTIER 榜单设置"), client.currentScreen));
+                        client.setScreen(new ConfigScreen(Text.literal("YLCTierTagger 配置"), client.currentScreen));
                     }
                     return 1;
                 }));

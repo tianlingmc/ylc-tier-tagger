@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * 在 ESC 暂停菜单的「模组」按钮正下方，加一个我们自己的「PVPTIER 设置」按钮，
+ * 在 ESC 暂停菜单的「模组」按钮正下方，加一个我们自己的「YLCTierTagger 配置」按钮，
  * 点击打开 {@link ConfigScreen}（返回时回到暂停菜单）。
  *
  * <p>暂停菜单用 GridWidget 两列布局，「模组」在右列，正下方通常还有「辅助功能」等按钮，
@@ -30,7 +30,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GameMenuScreen.class)
 public abstract class GameMenuScreenMixin {
 
-    private static final String BUTTON_LABEL = "PVPTIER 设置";
+    private static final String BUTTON_LABEL = "YLCTierTagger 配置";
 
     @Inject(method = "init", at = @At("RETURN"))
     private void ylcTierTaggerAddConfigButton(CallbackInfo ci) {
@@ -91,7 +91,7 @@ public abstract class GameMenuScreenMixin {
                         b -> {
                             MinecraftClient client = MinecraftClient.getInstance();
                             if (client != null) {
-                                client.setScreen(new ConfigScreen(Text.literal("PVPTIER 榜单设置"), self));
+                                client.setScreen(new ConfigScreen(Text.literal(BUTTON_LABEL), self));
                             }
                         })
                 .dimensions(baseX, y, w, h)

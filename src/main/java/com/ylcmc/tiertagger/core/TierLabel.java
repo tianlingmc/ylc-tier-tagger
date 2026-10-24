@@ -75,7 +75,7 @@ public final class TierLabel {
     }
 
     /**
-     * 生成「图标 + 段位」这一小段标签。
+     * 生成「图标 + 空格 + 段位」这一小段标签。
      *
      * @return 模式不在注册表里时返回 null
      */
@@ -86,6 +86,7 @@ public final class TierLabel {
 
         MutableText badge = Text.literal(String.valueOf(mode.icon)).copy()
                 .styled(s -> s.withColor(Formatting.WHITE));
+        badge.append(Text.literal(" ").copy());
         // 配置里存的是 RGB，这里补上 alpha，否则段位文字会被当成全透明画不出来
         badge.append(Text.literal(selected.tier).copy()
                 .styled(s -> s.withColor(0xFF000000 | cfg.colorOf(selected.tier))));
@@ -93,7 +94,33 @@ public final class TierLabel {
     }
 
     /**
-     * 把段位标签拼到原始名字上。
+     * 把段位标签拼到名字上，分隔符统一是「 | 」。
+     *
+     * <p>左侧：[图标] 段位 | 名字　　右侧：名字 | [图标] 段位
+     *
+     * <p>聊天栏、Tab 玩家列表、头顶名牌都走这里，保证不管显示在哪里、不管放在哪一侧，
+     * 段位和名字之间都有一致的分隔。
+     */
+    public static Text combine(Text name, MutableText badge, TierConfig cfg) {
+        if (badge == null) {
+            return name;
+        }
+        MutableText wrapper = Text.literal("");
+        MutableText separator = Text.literal(" | ").copy().styled(s -> s.withColor(Formatting.GRAY));
+        if (cfg.renderLocation == TierConfig.RenderLocation.RIGHT) {
+            wrapper.append(name);
+            wrapper.append(separator);
+            wrapper.append(badge);
+        } else {
+            wrapper.append(badge);
+            wrapper.append(separator);
+            wrapper.append(name);
+        }
+        return wrapper;
+    }
+
+    /**
+     * 按配置把段位标签拼到原始名字上（Tab 列表与头顶名牌用）。
      *
      * @param original 原始玩家名
      * @return 拼好后的文本；没有段位时原样返回
@@ -103,22 +130,10 @@ public final class TierLabel {
         if (selected == null) {
             return original;
         }
-
-        TierRegistry.Mode mode = TierRegistry.get(selected.modeKey);
-        if (mode == null) {
+        MutableText badge = badge(selected, cfg);
+        if (badge == null) {
             return original;
         }
-
-        MutableText icon = Text.literal(String.valueOf(mode.icon)).copy()
-                .styled(s -> s.withColor(Formatting.WHITE));
-        MutableText tier = Text.literal(selected.tier).copy()
-                .styled(s -> s.withColor(0xFF000000 | cfg.colorOf(selected.tier)));
-        MutableText separator = Text.literal(" | ").copy().styled(s -> s.withColor(Formatting.GRAY));
-        MutableText space = Text.literal(" ").copy();
-
-        if (cfg.renderLocation == TierConfig.RenderLocation.LEFT) {
-            return icon.copy().append(space).append(tier).append(separator).append(original);
-        }
-        return original.copy().append(separator).append(tier).append(space).append(icon);
+        return combine(original, badge, cfg);
     }
 }
