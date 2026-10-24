@@ -18,10 +18,8 @@
   },
   "depends": {
     "fabricloader": ">=${loader_version}",
-    "fabric-api": "*",
     "minecraft": "${minecraft_version}",
-    "java": ">=21",
-    "cloth-config": "*"
+    "java": ">=21"
   },
   "mixins": [
     "ylctiertagger.mixins.json"

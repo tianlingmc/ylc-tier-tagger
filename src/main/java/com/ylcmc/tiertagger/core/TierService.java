@@ -37,7 +37,7 @@ public final class TierService {
     private static final String API_URL = "https://pvptier.ylcmc.top/api/list?mode=overall&limit=200&offset=";
 
     private static final int PAGE_LIMIT = 200;
-    private static final long CACHE_TTL_MS = 5L * 60L * 1000L;
+    private static final long CACHE_TTL_MS = 10L * 60L * 1000L;
     private static final Duration HTTP_TIMEOUT = Duration.ofSeconds(10);
     private static final int HTTP_ATTEMPTS = 3;
     private static final long RETRY_DELAY_MS = 30_000L;
@@ -54,6 +54,21 @@ public final class TierService {
     private final AtomicBoolean updating = new AtomicBoolean(false);
 
     private volatile long lastUpdate = 0L;
+
+    /** 最近一次拉取的结果状态。 */
+    public enum Status {
+        /** 还没开始拉。 */
+        IDLE,
+        /** 正在拉。 */
+        LOADING,
+        /** 拉取成功。 */
+        OK,
+        /** 拉取失败。 */
+        FAILED
+    }
+
+    private volatile Status status = Status.IDLE;
+    private volatile String lastError = null;
 
     public TierService() {
         this.cacheFile = FabricLoader.getInstance()
@@ -91,7 +106,21 @@ public final class TierService {
         return System.currentTimeMillis() - lastUpdate > CACHE_TTL_MS;
     }
 
-    /** 启动时读本地缓存，随后触发一次后台刷新。 */
+    /** 最近一次拉取的状态。 */
+    public Status status() {
+        return status;
+    }
+
+    /** 最近一次拉取失败的原因，没有则为 null。 */
+    public String lastError() {
+        return lastError;
+    }
+
+    /**
+     * 进程启动时调用：先读本地缓存兜底，再强制拉一次最新数据。
+     *
+     * <p>无论本地缓存是否还有效，这次都会重新请求接口。
+     */
     public void bootstrap() {
         loadCache();
         refreshAsync();
@@ -106,20 +135,28 @@ public final class TierService {
         if (!updating.compareAndSet(false, true)) {
             return false;
         }
+        status = Status.LOADING;
         executor.submit(() -> {
             try {
                 List<PlayerEntry> fresh = fetchAll();
-                if (fresh != null && !fresh.isEmpty()) {
-                    players.clear();
-                    for (PlayerEntry p : fresh) {
-                        if (p != null && p.name != null) {
-                            players.put(p.name.toLowerCase(Locale.ROOT), p);
-                        }
-                    }
-                    lastUpdate = System.currentTimeMillis();
-                    saveCache(fresh);
+                if (fresh == null) {
+                    status = Status.FAILED;
+                    lastError = "接口无响应或返回异常";
+                    return;
                 }
+                players.clear();
+                for (PlayerEntry p : fresh) {
+                    if (p != null && p.name != null) {
+                        players.put(p.name.toLowerCase(Locale.ROOT), p);
+                    }
+                }
+                lastUpdate = System.currentTimeMillis();
+                lastError = null;
+                status = Status.OK;
+                saveCache(fresh);
             } catch (Exception e) {
+                status = Status.FAILED;
+                lastError = String.valueOf(e.getMessage());
                 System.err.println("[ylc-tier-tagger] 拉取排行榜失败：" + e);
             } finally {
                 updating.set(false);

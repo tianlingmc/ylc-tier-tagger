@@ -5,7 +5,6 @@ import com.ylcmc.tiertagger.client.YlcTierTaggerClient;
 import com.ylcmc.tiertagger.core.PlayerEntry;
 import com.ylcmc.tiertagger.core.TierConfig;
 import com.ylcmc.tiertagger.core.TierLabel;
-import me.shedaniel.autoconfig.AutoConfig;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;
@@ -19,7 +18,7 @@ public abstract class PlayerEntityMixin {
 
     @ModifyReturnValue(method = "getDisplayName", at = @At("RETURN"))
     private Text ylcTierTaggerPrependTier(Text original) {
-        TierConfig config = YlcTierTaggerClient.config();
+        TierConfig config = TierConfig.get();
         if (!config.enabled) {
             return original;
         }

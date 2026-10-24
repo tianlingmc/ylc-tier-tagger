@@ -20,7 +20,7 @@ public class PlayerListHudMixin {
 
     @ModifyReturnValue(method = "getPlayerName", at = @At("RETURN"))
     private Text ylcTierTaggerPrependTier(Text original, PlayerListEntry entry) {
-        TierConfig config = YlcTierTaggerClient.config();
+        TierConfig config = TierConfig.get();
         if (!config.enabled || !config.showOnTab) {
             return original;
         }

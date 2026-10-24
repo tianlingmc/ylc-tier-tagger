@@ -1,14 +1,26 @@
 package com.ylcmc.tiertagger.core;
 
-import me.shedaniel.autoconfig.ConfigData;
-import me.shedaniel.autoconfig.annotation.Config;
-import me.shedaniel.autoconfig.annotation.ConfigEntry;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import net.fabricmc.loader.api.FabricLoader;
+
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
- * 模组配置。装了 cloth-config 之后，游戏里用 /config 命令打开。
+ * 模组配置。自研存储，不依赖 cloth-config。
+ *
+ * <p>配置以 JSON 存在 config/ylc-tier-tagger/settings.json。
  */
-@Config(name = "ylc-tier-tagger")
-public class TierConfig implements ConfigData {
+public class TierConfig {
+
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static TierConfig instance = new TierConfig();
+
+    private Path file;
 
     /** 总开关。 */
     public boolean enabled = true;
@@ -25,26 +37,59 @@ public class TierConfig implements ConfigData {
     /** 档位选取规则。 */
     public DisplayRule displayRule = DisplayRule.HIGHEST_ONLY;
 
-    @ConfigEntry.ColorPicker
     public int HT1 = 0xe8ba3a;
-    @ConfigEntry.ColorPicker
     public int LT1 = 0xd5b355;
-    @ConfigEntry.ColorPicker
     public int HT2 = 0xc4d3e7;
-    @ConfigEntry.ColorPicker
     public int LT2 = 0xa0a7b2;
-    @ConfigEntry.ColorPicker
     public int HT3 = 0xf89f5a;
-    @ConfigEntry.ColorPicker
     public int LT3 = 0xc67b42;
-    @ConfigEntry.ColorPicker
     public int HT4 = 0x81749a;
-    @ConfigEntry.ColorPicker
     public int LT4 = 0x655b79;
-    @ConfigEntry.ColorPicker
     public int HT5 = 0x8f82a8;
-    @ConfigEntry.ColorPicker
     public int LT5 = 0x655b79;
+
+    public static TierConfig get() {
+        return instance;
+    }
+
+    /** 读取配置文件；读不到就用默认值。 */
+    public static void load() {
+        TierConfig cfg = new TierConfig();
+        cfg.file = FabricLoader.getInstance()
+                .getConfigDir()
+                .resolve("ylc-tier-tagger")
+                .resolve("settings.json");
+        try {
+            if (Files.isRegularFile(cfg.file)) {
+                try (Reader reader = Files.newBufferedReader(cfg.file, StandardCharsets.UTF_8)) {
+                    TierConfig loaded = GSON.fromJson(reader, TierConfig.class);
+                    if (loaded != null) {
+                        loaded.file = cfg.file;
+                        instance = loaded;
+                        return;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[ylc-tier-tagger] 读取配置失败，改用默认值：" + e);
+        }
+        instance = cfg;
+    }
+
+    /** 写回配置文件。 */
+    public void save() {
+        if (file == null) {
+            return;
+        }
+        try {
+            Files.createDirectories(file.getParent());
+            try (Writer writer = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
+                GSON.toJson(this, writer);
+            }
+        } catch (Exception e) {
+            System.err.println("[ylc-tier-tagger] 写入配置失败：" + e);
+        }
+    }
 
     /** 取段位对应的颜色。 */
     public int colorOf(String tier) {
@@ -64,39 +109,48 @@ public class TierConfig implements ConfigData {
         }
     }
 
+    /** 写入某个段位的颜色。 */
+    public void setColor(String tier, int rgb) {
+        switch (tier.trim().toUpperCase()) {
+            case "HT1": HT1 = rgb; break;
+            case "LT1": LT1 = rgb; break;
+            case "HT2": HT2 = rgb; break;
+            case "LT2": LT2 = rgb; break;
+            case "HT3": HT3 = rgb; break;
+            case "LT3": LT3 = rgb; break;
+            case "HT4": HT4 = rgb; break;
+            case "LT4": LT4 = rgb; break;
+            case "HT5": HT5 = rgb; break;
+            case "LT5": LT5 = rgb; break;
+            default: break;
+        }
+    }
+
+    /** 全部段位的名字，界面用。 */
+    public static final String[] TIER_NAMES = {
+            "HT1", "LT1", "HT2", "LT2", "HT3", "LT3", "HT4", "LT4", "HT5", "LT5"
+    };
+
     public enum RenderLocation {
         LEFT("名字左侧"),
         RIGHT("名字右侧");
 
-        private final String label;
+        public final String label;
 
         RenderLocation(String label) {
             this.label = label;
         }
-
-        @Override
-        public String toString() {
-            return label;
-        }
     }
 
     public enum DisplayRule {
-        /** 只用选定模式；该模式没档位就不显示。 */
         SELECTED_ONLY("只用选中的模式"),
-        /** 只显示该玩家档位最高的模式。 */
         HIGHEST_ONLY("只显示最高的档位"),
-        /** 优先选定模式，没有则用最高的。 */
         MIXED("优先选中的模式");
 
-        private final String label;
+        public final String label;
 
         DisplayRule(String label) {
             this.label = label;
-        }
-
-        @Override
-        public String toString() {
-            return label;
         }
     }
 
@@ -117,11 +171,6 @@ public class TierConfig implements ConfigData {
         Mode(String key, String label) {
             this.key = key;
             this.label = label;
-        }
-
-        @Override
-        public String toString() {
-            return label;
         }
     }
 }
