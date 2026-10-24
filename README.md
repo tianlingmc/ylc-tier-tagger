@@ -5,6 +5,7 @@
 ## 功能
 
 - 头顶名牌、Tab 玩家列表、**聊天栏里的玩家名**，都带上「模式图标 + 段位」
+- 聊天栏里的标签放在名字前面还是后面，跟「显示位置」设置联动
 - **进程启动时拉一次最新榜单**，进游戏后弹窗告知数据状态（成功显示人数，失败显示原因）
 - 数据取自 PVPTIER 榜单接口，另有本地缓存兜底，缓存写在 `config/ylc-tier-tagger/tier_cache.json`
 - **零前置**：只依赖 Fabric Loader，不需要 fabric-api、cloth-config 或任何其他模组
@@ -27,7 +28,7 @@
 | `enabled` | 总开关 |
 | `showOnTab` | 是否在 Tab 玩家列表显示 |
 | `showInChat` | 是否在聊天消息的玩家名后显示 |
-| `renderLocation` | 段位显示在名字左侧或右侧 |
+| `renderLocation` | 段位显示在名字左侧或右侧（头顶名牌、Tab、聊天栏统一） |
 | `selectedMode` | 优先使用的模式 |
 | `displayRule` | 只用选中的模式 / 只显示最高的档位 / 优先选中的模式 |
 | `HT1`~`HT5`、`LT1`~`LT5` | 各段位颜色，界面里点按钮循环切换预设色 |
@@ -38,9 +39,35 @@
 ./gradlew build
 ```
 
-产物在 `build/libs/ylc-tier-tagger-<版本>.jar`，直接放进客户端 `mods` 目录。
+产物在 `build/libs/TLCTierTagger-<版本号>-fabric.jar`，直接放进客户端 `mods` 目录。
 
-环境要求：JDK 21（Minecraft 1.21.11 的运行时要求）。
+环境要求：JDK 21（Minecraft 1.20.5 及以后的运行时要求）。
+
+### 版本号
+
+版本号格式 `大版本.小版本.修订号`，目前是 beta 阶段，保持在 `0.x.y` 不进 1.0.0。
+**每次构建第三位自动 +1**（0.1.0 → 0.1.1 → 0.1.2 …），写回 `gradle.properties` 的 `mod_version`。
+只想重新打一次包、不想动版本号时加 `-PnoVersionBump`。
+
+### 支持的客户端版本
+
+| 客户端 | 产物 | 说明 |
+|---|---|---|
+| 1.20.5 ~ 1.21.11 | `TLCTierTagger-<版本>-fabric.jar` | 同一个包，Java 21 |
+| 1.20.1 ~ 1.20.4 | 同名，需要单独构建 | 这些版本跑在 Java 17 上，字节码版本不同 |
+
+跨版本靠的是 intermediary 映射：Yarn 的类名与方法名在版本间会改，但 intermediary 名基本稳定，
+所以同一份字节码能同时跑在多个版本上。为此做了两处适配：
+
+- 文本构造用 `Text.literal`（intermediary `method_43470`，1.20.1 起一直没变），
+  而不是 `Text.of`（1.20/1.20.6/1.21.4+ 各是不同 intermediary 名）
+- 玩家名用反射取（`GameProfile` 在 1.21.9 改成了 record，`name()` 与 `getName()` 两边都兼容）
+
+给 1.20.4 单独出包：
+
+```bash
+./gradlew build -PnoVersionBump -PmcVersion=1.20.4 -PyarnVersion=1.20.4+build.3 -PjavaRelease=17
+```
 
 ## 构建环境
 
@@ -86,6 +113,7 @@ src/main/java/com/ylcmc/tiertagger/
   core/TierRegistry.java           模式注册表与段位强度序
   core/TierLabel.java              段位选取与名字拼接
   core/ChatTagger.java             聊天消息玩家名加标签
+  core/PlayerNames.java            反射取玩家名（跨 GameProfile 改动）
   core/TierConfig.java             配置项与读写
   gui/ConfigScreen.java            自绘设置界面
   gui/ModeSelectScreen.java        tier 模式选择界面

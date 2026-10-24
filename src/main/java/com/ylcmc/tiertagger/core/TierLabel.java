@@ -84,9 +84,9 @@ public final class TierLabel {
         TierRegistry.Mode mode = TierRegistry.get(selected.modeKey);
         if (mode == null) return null;
 
-        MutableText badge = Text.of(String.valueOf(mode.icon)).copy()
+        MutableText badge = Text.literal(String.valueOf(mode.icon)).copy()
                 .styled(s -> s.withColor(Formatting.WHITE));
-        badge.append(Text.of(selected.tier).copy()
+        badge.append(Text.literal(selected.tier).copy()
                 .styled(s -> s.withColor(cfg.colorOf(selected.tier))));
         return badge;
     }
@@ -108,12 +108,12 @@ public final class TierLabel {
             return original;
         }
 
-        MutableText icon = Text.of(String.valueOf(mode.icon)).copy()
+        MutableText icon = Text.literal(String.valueOf(mode.icon)).copy()
                 .styled(s -> s.withColor(Formatting.WHITE));
-        MutableText tier = Text.of(selected.tier).copy()
+        MutableText tier = Text.literal(selected.tier).copy()
                 .styled(s -> s.withColor(cfg.colorOf(selected.tier)));
-        MutableText separator = Text.of(" | ").copy().styled(s -> s.withColor(Formatting.GRAY));
-        MutableText space = Text.of(" ").copy();
+        MutableText separator = Text.literal(" | ").copy().styled(s -> s.withColor(Formatting.GRAY));
+        MutableText space = Text.literal(" ").copy();
 
         if (cfg.renderLocation == TierConfig.RenderLocation.LEFT) {
             return icon.copy().append(space).append(tier).append(separator).append(original);

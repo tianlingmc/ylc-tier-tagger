@@ -19,8 +19,7 @@ public final class ChatTagger {
     }
 
     /** 尝试给这条消息的玩家名加上段位标签。认不出来就什么都不做。 */
-    public static void decorate(Text text) {
-        if (!(text instanceof MutableText mutable)) {
+    public static void decorate(Text text) {        if (!(text instanceof MutableText mutable)) {
             return;
         }
 
@@ -69,16 +68,17 @@ public final class ChatTagger {
             return;
         }
 
-        // 已经加过就别再加
-        List<Text> nameSiblings = nameText.getSiblings();
-        if (!nameSiblings.isEmpty()) {
-            Text last = nameSiblings.get(nameSiblings.size() - 1);
-            if (selected.tier.equals(last.getString())) {
-                return;
-            }
+        if (cfg.renderLocation == TierConfig.RenderLocation.RIGHT) {
+            // 标签放在名字后面
+            nameText.append(Text.literal(" ").copy());
+            nameText.append(badge);
+        } else {
+            // 标签放在名字前面：整段名字包一层，名字本身的样式不受影响
+            MutableText wrapper = Text.literal("").copy();
+            wrapper.append(badge);
+            wrapper.append(Text.literal(" ").copy());
+            wrapper.append(nameText);
+            siblings.set(0, wrapper);
         }
-
-        nameText.append(Text.of(" ").copy());
-        nameText.append(badge);
     }
 }

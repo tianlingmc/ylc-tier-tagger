@@ -3,6 +3,7 @@ package com.ylcmc.tiertagger.mixin;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.ylcmc.tiertagger.client.YlcTierTaggerClient;
 import com.ylcmc.tiertagger.core.PlayerEntry;
+import com.ylcmc.tiertagger.core.PlayerNames;
 import com.ylcmc.tiertagger.core.TierConfig;
 import com.ylcmc.tiertagger.core.TierLabel;
 import com.mojang.authlib.GameProfile;
@@ -30,7 +31,7 @@ public class PlayerListHudMixin {
             return original;
         }
 
-        PlayerEntry data = YlcTierTaggerClient.SERVICE.find(profile.name());
+        PlayerEntry data = YlcTierTaggerClient.SERVICE.find(PlayerNames.of(profile));
         if (data == null) {
             return original;
         }

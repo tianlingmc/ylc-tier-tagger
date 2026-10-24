@@ -3,6 +3,7 @@ package com.ylcmc.tiertagger.mixin;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.ylcmc.tiertagger.client.YlcTierTaggerClient;
 import com.ylcmc.tiertagger.core.PlayerEntry;
+import com.ylcmc.tiertagger.core.PlayerNames;
 import com.ylcmc.tiertagger.core.TierConfig;
 import com.ylcmc.tiertagger.core.TierLabel;
 import net.minecraft.entity.player.PlayerEntity;
@@ -24,7 +25,7 @@ public abstract class PlayerEntityMixin {
         }
 
         PlayerEntity self = (PlayerEntity) (Object) this;
-        String name = self.getGameProfile().name();
+        String name = PlayerNames.of(self.getGameProfile());
         if (name == null) {
             return original;
         }

@@ -30,7 +30,7 @@ public class YlcTierCommand {
         root.executes(context -> {
             MinecraftClient client = MinecraftClient.getInstance();
             if (client != null) {
-                client.setScreen(new ConfigScreen(Text.of("PVPTIER 榜单设置")));
+                client.setScreen(new ConfigScreen(Text.literal("PVPTIER 榜单设置")));
             }
             return 1;
         });
@@ -38,7 +38,7 @@ public class YlcTierCommand {
         root.then(LiteralArgumentBuilder.<ClientCommandSource>literal("refresh")
                 .executes(context -> {
                     boolean started = YlcTierTaggerClient.SERVICE.refreshAsync();
-                    reply(context, Text.of(started ? "正在重新拉取榜单…" : "正在拉取中，请稍候"));
+                    reply(context, Text.literal(started ? "正在重新拉取榜单…" : "正在拉取中，请稍候"));
                     return 1;
                 }));
 
@@ -47,7 +47,7 @@ public class YlcTierCommand {
                     String name = context.getArgument("player", String.class);
                     PlayerEntry entry = YlcTierTaggerClient.SERVICE.find(name);
                     if (entry == null) {
-                        reply(context, Text.of("排行榜里没有这个玩家").copy().styled(s -> s.withColor(Formatting.RED)));
+                        reply(context, Text.literal("排行榜里没有这个玩家").copy().styled(s -> s.withColor(Formatting.RED)));
                         return 0;
                     }
                     reply(context, buildPlayerCard(entry));
@@ -59,7 +59,7 @@ public class YlcTierCommand {
 
     /** 列出某人在各模式的段位。 */
     private static MutableText buildPlayerCard(PlayerEntry entry) {
-        MutableText result = Text.of("======== " + entry.name + " ========\n")
+        MutableText result = Text.literal("======== " + entry.name + " ========\n")
                 .copy().styled(s -> s.withColor(Formatting.GOLD));
 
         if (entry.tiers != null) {
@@ -71,15 +71,15 @@ public class YlcTierCommand {
                 String icon = mode == null ? "" : String.valueOf(mode.icon);
                 String label = mode == null ? t.mode : mode.label;
 
-                result.append(Text.of(icon + " " + label + "：")
+                result.append(Text.literal(icon + " " + label + "：")
                         .copy().styled(s -> s.withColor(Formatting.GRAY)));
-                result.append(Text.of(t.tier)
+                result.append(Text.literal(t.tier)
                         .copy().styled(s -> s.withColor(TierConfig.get().colorOf(t.tier))));
-                result.append(Text.of("\n").copy().styled(s -> s.withColor(Formatting.GRAY)));
+                result.append(Text.literal("\n").copy().styled(s -> s.withColor(Formatting.GRAY)));
             }
         }
 
-        result.append(Text.of("地区：" + (entry.region == null ? "-" : entry.region)
+        result.append(Text.literal("地区：" + (entry.region == null ? "-" : entry.region)
                         + "　积分：" + entry.points + "　名次：" + entry.rank)
                 .copy().styled(s -> s.withColor(Formatting.DARK_GRAY)));
         return result;

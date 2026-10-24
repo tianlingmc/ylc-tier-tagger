@@ -5,11 +5,32 @@ plugins {
     id 'maven-publish'
 }
 
-version = project.mod_version
+/**
+ * 每次构建把第三位版本号 +1（0.1.0 -> 0.1.1 -> 0.1.2 ...）。
+ * 发布前保持 0.x.y，不进 1.0.0。
+ * 用 -PnoVersionBump 可以关掉（例如只想重新打一次包时）。
+ */
+def bumpVersion() {
+    if (project.hasProperty('noVersionBump')) {
+        return project.mod_version
+    }
+    def f = project.file('gradle.properties')
+    def text = f.getText('UTF-8')
+    def matcher = text =~ /(?m)^mod_version=(.*)$/
+    if (!matcher.find()) {
+        return project.mod_version
+    }
+    def parts = matcher.group(1).trim().tokenize('.')
+    def next = "${parts[0]}.${parts[1]}.${(parts[2] as int) + 1}"
+    f.write(text.replaceFirst(/(?m)^mod_version=.*$/, "mod_version=${next}"), 'UTF-8')
+    return next
+}
+
+version = bumpVersion()
 group = project.maven_group
 
 base {
-    archivesName = project.archives_base_name
+    archivesName = "TLCTierTagger"
 }
 
 repositories {
@@ -19,9 +40,13 @@ repositories {
     maven { url "https://api.modrinth.com/maven" }
 }
 
+// 可以用 -PmcVersion=1.20.4 -PyarnVersion=1.20.4+build.3 -PjavaRelease=17 切到旧版本出包
+def mcVersion = project.findProperty('mcVersion') ?: project.minecraft_version
+def yarnVersion = project.findProperty('yarnVersion') ?: project.yarn_mappings
+
 dependencies {
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    minecraft "com.mojang:minecraft:${mcVersion}"
+    mappings "net.fabricmc:yarn:${yarnVersion}:v2"
     // 只依赖 loader 本身，不需要任何前置模组
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
@@ -44,8 +69,9 @@ processResources {
     }
 }
 
-// Minecraft 1.21.11 运行在 Java 21 上
-def targetJavaVersion = 21
+// Minecraft 1.20.5 及以后运行在 Java 21 上，1.20.1~1.20.4 是 Java 17。
+// 想给老版本出包时用 -PjavaRelease=17 -PmcVersion=1.20.4 -PyarnVersion=...
+def targetJavaVersion = (project.findProperty('javaRelease') ?: '21') as int
 
 tasks.withType(JavaCompile).configureEach {
     it.options.encoding = "UTF-8"
@@ -64,6 +90,11 @@ jar {
     from("LICENSE") {
         rename { "${it}_${project.base.archivesName.get()}" }
     }
+}
+
+// 产物名：TLCTierTagger-<版本号>-fabric.jar
+tasks.named("remapJar") {
+    archiveFileName = "TLCTierTagger-${project.version}-fabric.jar"
 }
 
 publishing {

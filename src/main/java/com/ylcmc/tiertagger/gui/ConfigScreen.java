@@ -38,7 +38,7 @@ public class ConfigScreen extends Screen {
         int y = 40;
 
         addDrawableChild(ButtonWidget.builder(
-                        Text.of("总开关：" + (cfg.enabled ? "开" : "关")),
+                        Text.literal("总开关：" + (cfg.enabled ? "开" : "关")),
                         button -> {
                             cfg.enabled = !cfg.enabled;
                             cfg.save();
@@ -49,7 +49,7 @@ public class ConfigScreen extends Screen {
         y += BUTTON_H + GAP;
 
         addDrawableChild(ButtonWidget.builder(
-                        Text.of("Tab 列表显示：" + (cfg.showOnTab ? "开" : "关")),
+                        Text.literal("Tab 列表显示：" + (cfg.showOnTab ? "开" : "关")),
                         button -> {
                             cfg.showOnTab = !cfg.showOnTab;
                             cfg.save();
@@ -60,7 +60,7 @@ public class ConfigScreen extends Screen {
         y += BUTTON_H + GAP;
 
         addDrawableChild(ButtonWidget.builder(
-                        Text.of("聊天栏显示：" + (cfg.showInChat ? "开" : "关")),
+                        Text.literal("聊天栏显示：" + (cfg.showInChat ? "开" : "关")),
                         button -> {
                             cfg.showInChat = !cfg.showInChat;
                             cfg.save();
@@ -71,7 +71,7 @@ public class ConfigScreen extends Screen {
         y += BUTTON_H + GAP;
 
         addDrawableChild(ButtonWidget.builder(
-                        Text.of("显示位置：" + cfg.renderLocation.label),
+                        Text.literal("显示位置：" + cfg.renderLocation.label),
                         button -> {
                             cfg.renderLocation = cfg.renderLocation == TierConfig.RenderLocation.LEFT
                                     ? TierConfig.RenderLocation.RIGHT
@@ -84,10 +84,10 @@ public class ConfigScreen extends Screen {
         y += BUTTON_H + GAP;
 
         addDrawableChild(ButtonWidget.builder(
-                        Text.of("优先模式：" + cfg.selectedMode.label + "  ▸"),
+                        Text.literal("优先模式：" + cfg.selectedMode.label + "  ▸"),
                         button -> {
                             if (client != null) {
-                                client.setScreen(new ModeSelectScreen(Text.of("选择 tier 模式")));
+                                client.setScreen(new ModeSelectScreen(Text.literal("选择 tier 模式")));
                             }
                         })
                 .dimensions(x, y, BUTTON_W, BUTTON_H)
@@ -95,7 +95,7 @@ public class ConfigScreen extends Screen {
         y += BUTTON_H + GAP;
 
         addDrawableChild(ButtonWidget.builder(
-                        Text.of("显示规则：" + cfg.displayRule.label),
+                        Text.literal("显示规则：" + cfg.displayRule.label),
                         button -> {
                             TierConfig.DisplayRule[] values = TierConfig.DisplayRule.values();
                             cfg.displayRule = values[(cfg.displayRule.ordinal() + 1) % values.length];
@@ -124,7 +124,7 @@ public class ConfigScreen extends Screen {
                     .build());
         }
 
-        addDrawableChild(ButtonWidget.builder(Text.of("完成"), button -> {
+        addDrawableChild(ButtonWidget.builder(Text.literal("完成"), button -> {
                     cfg.save();
                     close();
                 })
@@ -137,17 +137,17 @@ public class ConfigScreen extends Screen {
         super.render(context, mouseX, mouseY, delta);
         context.drawText(textRenderer, this.title, 8, 8, 0xffffff, true);
         context.drawText(textRenderer,
-                Text.of("数据来源：pvptier.ylcmc.top　当前 " + com.ylcmc.tiertagger.client.YlcTierTaggerClient.SERVICE.size() + " 人"),
+                Text.literal("数据来源：pvptier.ylcmc.top　当前 " + com.ylcmc.tiertagger.client.YlcTierTaggerClient.SERVICE.size() + " 人"),
                 8, 20, 0xaaaaaa, false);
         context.drawText(textRenderer,
-                Text.of("显示规则为「只用选中的模式」时，只有优先模式有段位才会显示。"),
+                Text.literal("显示规则为「只用选中的模式」时，只有优先模式有段位才会显示。"),
                 8, 32, 0xaaaaaa, false);
     }
 
     /** 段位名加一个色块。 */
     private static Text colorLabel(String tier, TierConfig cfg) {
-        MutableText label = Text.of(tier + "  ").copy();
-        label.append(Text.of("■").copy().styled(s -> s.withColor(cfg.colorOf(tier))));
+        MutableText label = Text.literal(tier + "  ").copy();
+        label.append(Text.literal("■").copy().styled(s -> s.withColor(cfg.colorOf(tier))));
         return label;
     }
 

@@ -41,10 +41,10 @@ public abstract class OptionsScreenMixin {
             }
         }
 
-        this.addDrawableChild(ButtonWidget.builder(Text.of(BUTTON_LABEL), b -> {
+        this.addDrawableChild(ButtonWidget.builder(Text.literal(BUTTON_LABEL), b -> {
                     MinecraftClient client = MinecraftClient.getInstance();
                     if (client != null) {
-                        client.setScreen(new ConfigScreen(Text.of(BUTTON_LABEL)));
+                        client.setScreen(new ConfigScreen(Text.literal(BUTTON_LABEL)));
                     }
                 })
                 .dimensions(8, self.height - 28, 140, 20)

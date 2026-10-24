@@ -27,12 +27,12 @@ public class ModeSelectScreen extends Screen {
             boolean selected = cfg.selectedMode == mode;
             final boolean wasSelected = selected;
             addDrawableChild(ButtonWidget.builder(
-                            Text.of((wasSelected ? "● " : "○ ") + mode.label),
+                            Text.literal((wasSelected ? "● " : "○ ") + mode.label),
                             button -> {
                                 cfg.selectedMode = mode;
                                 cfg.save();
                                 if (client != null) {
-                                    client.setScreen(new ConfigScreen(Text.of("PVPTIER 榜单设置")));
+                                    client.setScreen(new ConfigScreen(Text.literal("PVPTIER 榜单设置")));
                                 }
                             })
                     .dimensions(x, y, buttonWidth, 20)
@@ -40,7 +40,7 @@ public class ModeSelectScreen extends Screen {
             y += 22;
         }
 
-        addDrawableChild(ButtonWidget.builder(Text.of("返回"), button -> close())
+        addDrawableChild(ButtonWidget.builder(Text.literal("返回"), button -> close())
                 .dimensions(x, y + 6, buttonWidth, 20)
                 .build());
     }
@@ -50,7 +50,7 @@ public class ModeSelectScreen extends Screen {
         super.render(context, mouseX, mouseY, delta);
         context.drawText(textRenderer, this.title, 8, 8, 0xffffff, true);
         context.drawText(textRenderer,
-                Text.of("● 表示当前选中的模式。选定模式没有段位时按显示规则处理。"),
+                Text.literal("● 表示当前选中的模式。选定模式没有段位时按显示规则处理。"),
                 8, 20, 0xaaaaaa, false);
     }
 }

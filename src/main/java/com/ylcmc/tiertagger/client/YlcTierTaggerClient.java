@@ -110,9 +110,24 @@ public class YlcTierTaggerClient implements ClientModInitializer {
                 break;
         }
 
-        client.getToastManager().add(new SystemToast(
-                SystemToast.Type.PERIODIC_NOTIFICATION,
-                Text.of(title),
-                Text.of(body)));
+        showToast(client, title, body);
+    }
+
+    /**
+     * 弹一个系统提示。
+     *
+     * <p>1.20.5 之前没有 toast 系统，那时退回聊天栏消息。
+     */
+    private static void showToast(MinecraftClient client, String title, String body) {
+        try {
+            client.getToastManager().add(new SystemToast(
+                    SystemToast.Type.PERIODIC_NOTIFICATION,
+                    Text.literal(title),
+                    Text.literal(body)));
+        } catch (Throwable t) {
+            if (client.player != null) {
+                client.player.sendMessage(Text.literal("[" + title + "] " + body), false);
+            }
+        }
     }
 }
