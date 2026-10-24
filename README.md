@@ -39,9 +39,20 @@
 ./gradlew build
 ```
 
-产物在 `build/libs/TLCTierTagger-<版本号>-fabric.jar`，直接放进客户端 `mods` 目录。
+一键出两个包：
 
-环境要求：JDK 21（Minecraft 1.20.5 及以后的运行时要求）。
+```bash
+bash tools/build-all.sh
+```
+
+产物在 `dist/` 下，两个包版本号一致：
+
+```
+dist/1.20.5-1.21.11/TLCTierTagger-<版本号>-fabric.jar   Java 21
+dist/1.20.1-1.20.4/TLCTierTagger-<版本号>-fabric.jar   Java 17
+```
+
+直接放进对应版本客户端的 `mods` 目录。
 
 ### 版本号
 
@@ -53,8 +64,8 @@
 
 | 客户端 | 产物 | 说明 |
 |---|---|---|
-| 1.20.5 ~ 1.21.11 | `TLCTierTagger-<版本>-fabric.jar` | 同一个包，Java 21 |
-| 1.20.1 ~ 1.20.4 | 同名，需要单独构建 | 这些版本跑在 Java 17 上，字节码版本不同 |
+| 1.20.5 ~ 1.21.11 | `dist/1.20.5-1.21.11/` | Java 21，字节码 65 |
+| 1.20.1 ~ 1.20.4 | `dist/1.20.1-1.20.4/` | Java 17，字节码 61 |
 
 跨版本靠的是 intermediary 映射：Yarn 的类名与方法名在版本间会改，但 intermediary 名基本稳定，
 所以同一份字节码能同时跑在多个版本上。为此做了两处适配：
@@ -63,11 +74,13 @@
   而不是 `Text.of`（1.20/1.20.6/1.21.4+ 各是不同 intermediary 名）
 - 玩家名用反射取（`GameProfile` 在 1.21.9 改成了 record，`name()` 与 `getName()` 两边都兼容）
 
-给 1.20.4 单独出包：
+单出一个包的完整参数（`tools/build-all.sh` 里就是这么调的）：
 
 ```bash
-./gradlew build -PnoVersionBump -PmcVersion=1.20.4 -PyarnVersion=1.20.4+build.3 -PjavaRelease=17
+./gradlew build -PnoVersionBump   -PmcVersion=1.20.4 -PyarnVersion=1.20.4+build.3 -PjavaRelease=17   -PfabricApiVersion=0.97.3+1.20.4 -PmodmenuVersion=9.2.0
 ```
+
+manifest 里声明的兼容范围会随构建目标自动切换，不用手改。
 
 ## 构建环境
 
@@ -125,4 +138,5 @@ src/main/java/com/ylcmc/tiertagger/
   mixin/ChatHudMixin.java          聊天栏玩家名
   mixin/PlayerListHudMixin.java    Tab 玩家列表
 tools/make-icon.py                 由 modicon.jpg 生成 mod 图标
+tools/build-all.sh                 一键出两个版本的包
 ```

@@ -40,11 +40,20 @@ repositories {
     maven { url "https://api.modrinth.com/maven" }
 }
 
+// Minecraft 1.20.5 及以后运行在 Java 21 上，1.20.1~1.20.4 是 Java 17。
+// 想给老版本出包时用 -PjavaRelease=17 -PmcVersion=1.20.4 -PyarnVersion=...
+def targetJavaVersion = (project.findProperty('javaRelease') ?: '21') as int
+
 // 可以用 -PmcVersion=1.20.4 -PyarnVersion=1.20.4+build.3 -PjavaRelease=17 切到旧版本出包
 def mcVersion = project.findProperty('mcVersion') ?: project.minecraft_version
 def yarnVersion = project.findProperty('yarnVersion') ?: project.yarn_mappings
 def fabricApiVersion = project.findProperty('fabricApiVersion') ?: project.fabric_version
 def modmenuVer = project.findProperty('modmenuVersion') ?: project.modmenu_version
+
+// manifest 里声明的兼容范围，随构建目标自动切换
+def compatRange = project.findProperty('compatRange')
+        ?: (mcVersion.startsWith('1.20') ? '>=1.20.1 <1.20.5' : '>=1.20.5 <1.22')
+def javaRange = project.findProperty('javaRange') ?: (targetJavaVersion >= 21 ? '>=21' : '>=17')
 
 dependencies {
     minecraft "com.mojang:minecraft:${mcVersion}"
@@ -62,19 +71,19 @@ dependencies {
 processResources {
     inputs.property "version", project.version
     inputs.property "minecraft_version", project.minecraft_version
+    inputs.property "minecraft_range", compatRange
+    inputs.property "java_range", javaRange
     inputs.property "loader_version", project.loader_version
     filteringCharset "UTF-8"
 
     filesMatching("fabric.mod.json") {
         expand "version": project.version,
                 "minecraft_version": project.minecraft_version,
+                "minecraft_range": compatRange,
+                "java_range": javaRange,
                 "loader_version": project.loader_version
     }
 }
-
-// Minecraft 1.20.5 及以后运行在 Java 21 上，1.20.1~1.20.4 是 Java 17。
-// 想给老版本出包时用 -PjavaRelease=17 -PmcVersion=1.20.4 -PyarnVersion=...
-def targetJavaVersion = (project.findProperty('javaRelease') ?: '21') as int
 
 tasks.withType(JavaCompile).configureEach {
     it.options.encoding = "UTF-8"
