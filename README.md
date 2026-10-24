@@ -8,7 +8,8 @@
 - **进程启动时拉一次最新榜单**，进游戏后弹窗告知数据状态（成功显示人数，失败显示原因）
 - 数据取自 PVPTIER 榜单接口，另有本地缓存兜底，缓存写在 `config/ylc-tier-tagger/tier_cache.json`
 - **零前置**：只依赖 Fabric Loader，不需要 fabric-api、cloth-config 或任何其他模组
-- `/ylctier` 打开设置界面（自绘），`/ylctier refresh` 手动重拉，`/ylctier <玩家名>` 查看某人的段位
+- 设置界面有三个入口：游戏内 `/ylctier`、**游戏「选项」界面左下角的「PVPTIER 榜单设置」按钮**、ModMenu 之外的任何方式都不需要
+- `/ylctier refresh` 手动重拉，`/ylctier <玩家名>` 查看某人的段位
 
 ## 模式
 

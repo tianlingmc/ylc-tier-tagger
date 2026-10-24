@@ -5,6 +5,7 @@
   "refmap": "ylctiertagger.refmap.json",
   "client": [
     "MinecraftClientMixin",
+    "OptionsScreenMixin",
     "PlayerEntityMixin",
     "PlayerListHudMixin"
   ],
