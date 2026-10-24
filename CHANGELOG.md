@@ -2,6 +2,16 @@
 
 本项目的版本号采用 `大版本.小版本.修订号`。
 
+## 1.1.1
+
+- 修复普通聊天消息（玩家自己打的字）拿不到段位标签：客户端是用 `Text.translatable("chat.type.text", 名字, 内容)` 拼这类消息的，名字存在 `TranslatableTextContent` 的 args 里、不在 siblings 里，原先只遍历 siblings 的查找方式必然漏掉；新增对翻译组件参数的替换处理
+- 表现对比：进服广播、系统提示能正常加标签，而 `玩家名: 内容` 形式的发言完全没标签（这一类消息树截然不同，服务端拼好的整棵树能命中，客户端本地拼的就命中不了）
+- 参数匹配做了保守处理：优先「arg 文本正好等于某个玩家名」，其次才用「包含玩家名」并取文本最短的那个，避免把消息正文里的名字误判成说话人
+
+- Fixed missing tier tags on regular chat messages (text typed by players): the client composes those with `Text.translatable("chat.type.text", name, content)`, so the name lives in the `TranslatableTextContent` args rather than in siblings, and the old siblings-only walk always missed it; added replacement support for translatable arguments
+- Symptom: join broadcasts and system messages were tagged correctly while `name: message` chat lines got nothing, because the two have completely different message trees (server-composed trees are hit, locally composed ones were not)
+- Argument matching is deliberately conservative: prefers an arg whose text exactly equals a player name, otherwise uses the shortest arg containing one, so message bodies are less likely to be mistaken for the sender
+
 ## 1.1.0
 
 - 修复 1.20.1–1.20.4（Java 17）构建启动即崩：mixin 配置里 `compatibilityLevel` 误写成 `JAVA_21`，Java 17 运行时拒绝应用，导致所有混用全部失效；改为 `JAVA_17`，两个版本范围统一可跑

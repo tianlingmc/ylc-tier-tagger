@@ -5,6 +5,8 @@ import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import net.minecraft.text.TextContent;
+import net.minecraft.text.TranslatableTextContent;
 
 import java.util.List;
 
@@ -45,7 +47,12 @@ public final class ChatTagger {
 
         NameHit hit = findName(root, null, -1);
         if (hit == null || hit.parent == null) {
-            return text;
+            // 兄弟节点里没找到，再单独放一条：TranslatableTextContent 的 args。
+            // 玩家自己打的字是客户端用 Text.translatable("chat.type.text", 名字, 内容) 拼出来的，
+            // 名字存在 args 里、根本不在 siblings 里，所以只走上面那条路必然漏掉普通聊天消息，
+            // 而服务端拼好的整棵树（进服广播等）反而能命中。
+            Text viaArgs = applyTranslatable(root, cfg);
+            return viaArgs != null ? viaArgs : text;
         }
 
         TierLabel.Selected selected = TierLabel.pick(hit.entry, cfg);
@@ -181,5 +188,133 @@ public final class ChatTagger {
             }
         }
         return null;
+    }
+
+    /**
+     * 递归处理整棵树：对每个节点尝试替换 TranslatableTextContent 里的名字 arg。
+     *
+     * @return 有替换就返回新树，一处都没动返回 null
+     */
+    private static Text applyTranslatable(MutableText node, TierConfig cfg) {
+        MutableText replaced = replaceNameArg(node, cfg);
+        MutableText base = replaced != null ? replaced : node.copyContentOnly();
+        boolean changed = replaced != null;
+
+        for (Text s : node.getSiblings()) {
+            if (s instanceof MutableText child) {
+                Text r = applyTranslatable(child, cfg);
+                if (r != null) {
+                    base.append(r);
+                    changed = true;
+                } else {
+                    base.append(s);
+                }
+            } else {
+                base.append(s);
+            }
+        }
+        return changed ? base : null;
+    }
+
+    /**
+     * 尝试把某个 arg 换成「徽章 + 空格 + 原 arg」。
+     *
+     * <p>只处理 {@link TranslatableTextContent}：这类组件把参数存在 content 里，
+     * 不体现在 siblings 上，所以.findBySiblings 那条路扫不到。
+     *
+     * @return 替换成功返回新节点（不含原子节点，由调用方补），否则 null
+     */
+    private static MutableText replaceNameArg(MutableText node, TierConfig cfg) {
+        TextContent content = node.getContent();
+        if (!(content instanceof TranslatableTextContent ttc)) {
+            return null;
+        }
+        Object[] args = ttc.getArgs();
+        if (args == null || args.length == 0) {
+            return null;
+        }
+
+        int index = pickNameArg(args);
+        if (index < 0) {
+            return null;
+        }
+
+        PlayerEntry entry = findEntry(argString(args[index]));
+        if (entry == null) {
+            return null;
+        }
+        TierLabel.Selected selected = TierLabel.pick(entry, cfg);
+        if (selected == null) {
+            return null;
+        }
+        MutableText badge = TierLabel.badge(selected, cfg);
+        if (badge == null) {
+            return null;
+        }
+
+        Object original = args[index];
+        Text name = original instanceof Text t ? t : Text.literal(String.valueOf(original));
+
+        Object[] newArgs = args.clone();
+        newArgs[index] = wrapName(name, badge, cfg.renderLocation);
+
+        return Text.translatable(ttc.getKey(), newArgs).setStyle(node.getStyle());
+    }
+
+    /**
+     * 选出最像「发送者名字」的那个 arg 下标。
+     *
+     * <p>优先「渲染文本正好等于某个玩家名」，其次才是「包含某玩家名」，
+     * 后者取最短的那个（说话人名字通常比消息正文短），尽量别误伤正文。
+     *
+     * @return 命中返回下标，没有返回 -1
+     */
+    private static int pickNameArg(Object[] args) {
+        int exact = -1;
+        int contains = -1;
+        int containsLen = Integer.MAX_VALUE;
+
+        for (int i = 0; i < args.length; i++) {
+            String s = argString(args[i]);
+            if (s == null || s.isEmpty() || s.length() > 64) {
+                continue;
+            }
+            if (YlcTierTaggerClient.SERVICE.find(s) != null) {
+                exact = i;
+                break;
+            }
+            if (findEntry(s) != null && s.length() < containsLen) {
+                contains = i;
+                containsLen = s.length();
+            }
+        }
+        return exact >= 0 ? exact : contains;
+    }
+
+    /** 取出 arg 的渲染文本。只认 Text 与 String，其它类型不参与匹配。 */
+    private static String argString(Object arg) {
+        if (arg instanceof Text t) {
+            return t.getString();
+        }
+        if (arg instanceof String s) {
+            return s;
+        }
+        return null;
+    }
+
+    /** 把徽章拼到名字两侧之一，名字本身（含悬浮事件）整体保留。 */
+    private static Text wrapName(Text original, MutableText badge, TierConfig.RenderLocation loc) {
+        MutableText wrapper = Text.literal("").setStyle(Style.EMPTY);
+        MutableText space = Text.literal(" ");
+        if (loc == TierConfig.RenderLocation.RIGHT) {
+            wrapper.append(original);
+            wrapper.append(space);
+            wrapper.append(badge);
+        } else {
+            wrapper.append(badge);
+            wrapper.append(space);
+            wrapper.append(original);
+        }
+        return wrapper;
     }
 }

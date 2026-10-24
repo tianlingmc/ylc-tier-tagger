@@ -1,3 +1,9 @@
+# 1.1.1
+
+修复普通聊天消息（玩家自己打的字）拿不到段位标签：客户端是用 `Text.translatable("chat.type.text", 名字, 内容)` 拼这类消息的，名字存在 `TranslatableTextContent` 的 args 里、不在 siblings 里，原先只遍历 siblings 的查找方式必然漏掉；已新增对翻译组件参数的替换处理。表现为进服广播、系统提示能正常加标签，而 `玩家名: 内容` 形式的发言完全没标签。参数匹配做了保守处理：优先「arg 文本正好等于某个玩家名」，其次取最短的「包含玩家名」项，避免把正文里的名字误判成说话人。
+
+Fixed missing tier tags on regular chat messages (text typed by players): the client composes them with `Text.translatable("chat.type.text", name, content)`, so the name lives in the `TranslatableTextContent` args rather than in siblings, and the old siblings-only walk always missed it; added replacement support for translatable arguments. Symptom: join broadcasts and system messages were tagged while `name: message` chat lines got nothing. Argument matching is conservative: prefers an arg whose text exactly equals a player name, otherwise the shortest arg containing one, so bodies are less likely to be mistaken for the sender.
+
 # 1.1.0
 
 修复 1.20.1–1.20.4（Java 17）构建启动即崩：mixin 配置 compatibilityLevel 误写 JAVA_21，Java 17 运行时拒绝应用、所有混用失效；改为 JAVA_17，两个版本范围统一可跑。修复聊天栏段位装饰引发的两次启动崩溃（@ModifyArg@HEAD 不是合法注入点；@ModifyVariable 误用 argsOnly+index=0 把 this 槽位当参数）；最终用 @ModifyVariable 正确槽位（非静态方法第一个参数在槽位 1）替换消息参数。修正 LT5 与 LT4 默认颜色重复；修正 fabric.mod.json 描述转义错误并更正支持版本范围。数据接口偶发返回非 JSON（瞬断/网关）已做 3 次重试与本地缓存兜底，不会崩或卡启动。
