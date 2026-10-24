@@ -3,8 +3,10 @@
   "id": "ylctiertagger",
   "version": "${version}",
   "name": "YLCTierTagger",
-  "description": "在玩家名字旁显示 YueLunarCourt PVP 榜单的段位。",
-  "authors": ["天灵"],
+  "description": "1.21.11 高版本 服务器 YueLunarCourt 的 专属 PVP 榜单 Tagger 模组\\nThe exclusive PVP leaderboard Tagger mod for the YueLunarCourt server on Minecraft 1.21.11 (a newer version).",
+  "authors": [
+    "天灵"
+  ],
   "license": "MIT",
   "icon": "assets/ylctiertagger/icon.png",
   "contact": {
