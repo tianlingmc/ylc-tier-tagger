@@ -125,7 +125,11 @@ public final class OptionsConfigButton {
             y = Math.max(8, screen.height - 8 - h);
         }
 
-        mine.setDimensionsAndPosition(x, y, w, h);
+        // 注意：不要用 setDimensionsAndPosition —— 它的参数顺序是 (width, height, x, y)，
+        // 尺寸在前、坐标在后，按 (x, y, w, h) 传会把按钮撑成一大片盖住原版界面。
+        mine.setDimensions(w, h);
+        mine.setX(x);
+        mine.setY(y);
     }
 
     /** 宽度跟随原版按钮，只在离谱时夹到 [MIN_WIDTH, MAX_WIDTH]。 */

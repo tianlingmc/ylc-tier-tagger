@@ -21,7 +21,8 @@
 - 段位显示在右侧时图标被放到段位后面（Tab 列表与头顶名牌），统一改成图标在前
 - 选项页的设置按钮位置不对、掉到了左下角：「鸣谢…」的翻译键是 `options.credits_and_attribution`（不是 `options.credits`），之前按错键找不到目标就走了兜底；改为以「辅助功能…」为基准定位到它正下方那一格，并加上按按钮文字匹配的兜底
 - 所有 `/ylctier` 子命令都返回「未知或不完整的命令」：原版的 `sendChatCommand` 只负责把命令封成包发给服务端（开头的 parse 只为参数签名），**不会执行客户端命令**，而本模组零前置、没有 fabric-api 的客户端命令钩子，于是命令一律被发到服务端。新增 `ClientPlayNetworkHandlerMixin` 在 `sendChatCommand` 处拦截，命中即本地执行并取消发包（该方法的签名在 1.20.4 与 1.21.11 一致）；注册到 dispatcher 的部分保留，仅用于补全提示
-- 选项页设置按钮位置异常、并一度导致原版按钮全部看不见：`OptionsScreen.init()` 末尾自己就会调 `refreshWidgetPositions()`，所以 init 结束时坐标已经是最终值，正确做法是在 init 里定位一次即可。定位逻辑抽到 `OptionsConfigButton`（普通类），并加了尺寸校验——`children()` 里除了按钮还有 `ThreePartsLayoutWidget` / `GridWidget` 这类容器，一旦被当成基准按钮，我们的按钮就会被撑成一片大面板盖住整个网格。另外给注入加了 try/catch，加按钮失败也不会拖垮原版选项页
+- 选项页设置按钮变成一大片、盖住所有原版按钮：**`ClickableWidget.setDimensionsAndPosition` 的参数顺序是 `(width, height, x, y)`，尺寸在前、坐标在后**，之前按 `(x, y, w, h)` 传，按钮的宽高被设成了坐标值，于是铺满整个网格区域。已改为分别调 `setDimensions(w, h)` 与 `setX/setY`，不再依赖那个容易记反的方法
+- 顺带修正的定位问题：`OptionsScreen.init()` 末尾自己就会调 `refreshWidgetPositions()`，所以 init 结束时坐标已是最终值，定位一次即可；`children()` 里还有 `ThreePartsLayoutWidget` / `GridWidget` 这类容器，已加尺寸校验只认真正的按钮；按钮宽度改为跟随原版按钮的默认值（原版用 `ButtonWidget.Builder.build()` 不指定尺寸），不再设硬下限；注入处加了 try/catch
 
 # v1.0.0（2026/10/25）
 
