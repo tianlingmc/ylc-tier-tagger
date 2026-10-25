@@ -23,11 +23,15 @@ public abstract class OptionsScreenMixin {
     @Inject(method = "init", at = @At("RETURN"))
     private void ylcTierTaggerAddButton(CallbackInfo ci) {
         OptionsScreen self = (OptionsScreen) (Object) this;
-
-        // 窗口尺寸变化会重新 init，避免重复添加
-        if (OptionsConfigButton.find(self) == null) {
-            OptionsConfigButton.add(self);
+        try {
+            // 窗口尺寸变化会重新 init，避免重复添加
+            if (OptionsConfigButton.find(self) == null) {
+                OptionsConfigButton.add(self);
+            }
+            OptionsConfigButton.reposition(self);
+        } catch (Throwable t) {
+            // 加个按钮失败也不能把原版选项页搞坏
+            System.err.println("[ylc-tier-tagger] 添加选项页按钮失败：" + t);
         }
-        OptionsConfigButton.reposition(self);
     }
 }

@@ -19,7 +19,7 @@
 - 段位显示在名字右侧时标签跑到玩家发送的消息后面（原先按「最短包含匹配」挑参数会选中正文）；右侧时图标被放到段位后面，现已统一为图标在前
 - 选项页设置按钮位置不对掉到左下角：「鸣谢…」的键是 options.credits_and_attribution（不是 options.credits），按错键导致找不到目标走兜底；现以「辅助功能…」为基准定位到其正下方一格
 - 所有 /ylctier 子命令都返回「未知或不完整的命令」：原版 sendChatCommand 只把命令封包发给服务端、不执行客户端命令，而本模组零前置没有 fabric-api 的客户端命令钩子；新增拦截在 sendChatCommand 处命中即本地执行并取消发包
-- 选项页设置按钮位置漂移：1.21.x 的 OptionsScreen 在 init() 之后才由 refreshWidgetPositions() 定最终坐标，之前只量一次就会随界面缩放偏移；改为每 tick 按真实坐标校正
+- 选项页设置按钮位置异常、并一度导致原版按钮全部看不见：OptionsScreen.init() 末尾自己就会调 refreshWidgetPositions()，init 结束时坐标已是最终值，定位一次即可；另加了尺寸校验，避免把 ThreePartsLayoutWidget / GridWidget 这类容器误当成基准按钮（会把按钮撑成大片面板盖住网格），注入处也加了 try/catch 保护
 
 # v1.0.0（2026/10/25）
 

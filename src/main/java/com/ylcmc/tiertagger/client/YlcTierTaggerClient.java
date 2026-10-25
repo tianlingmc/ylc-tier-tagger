@@ -3,11 +3,9 @@ package com.ylcmc.tiertagger.client;
 import com.mojang.brigadier.CommandDispatcher;
 import com.ylcmc.tiertagger.core.TierConfig;
 import com.ylcmc.tiertagger.core.TierService;
-import com.ylcmc.tiertagger.gui.OptionsConfigButton;
 import com.ylcmc.tiertagger.modmenu.ClothConfigBootstrap;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.option.OptionsScreen;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.toast.SystemToast;
 import net.minecraft.text.Text;
@@ -59,11 +57,6 @@ public class YlcTierTaggerClient implements ClientModInitializer {
     /** 每客户端 tick 调用一次。 */
     public static void onTick(MinecraftClient client) {
         registerCommand(client);
-
-        // 选项页按钮：1.21.x 的最终布局在 init 之后才确定，这里按真实坐标校正，避免漂移
-        if (client.currentScreen instanceof OptionsScreen options) {
-            OptionsConfigButton.reposition(options);
-        }
 
         // 玩家可能在 cloth-config 的界面上改了设置，跟着同步一次
         TierConfig.reloadIfChanged();

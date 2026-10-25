@@ -15,11 +15,10 @@ import net.minecraft.text.TranslatableTextContent;
  *
  * <p>目标位置是选项网格右列最后一行的空格——也就是「鸣谢…」右边、「辅助功能…」下边。
  *
- * <p><b>为什么位置要反复校正</b>：1.21.x 的 {@code OptionsScreen} 有
- * {@code refreshWidgetPositions()}，它在 {@code init()} 之后才把按钮摆到最终位置。
- * 所以只在 {@code init} 末尾量一次坐标，量到的还不是最终布局，表现就是
- * 换界面缩放后按钮位置漂移。这里改成每 tick 按当前真实坐标重算一次，自然就稳了；
- * 1.20.x 没有那个方法、init 里坐标就是最终的，重算结果也一致。
+ * <p><b>定位时机</b>：1.21.x 的 {@code OptionsScreen.init()} 自己就在末尾调了
+ * {@code refreshWidgetPositions()}，所以在 {@code init} 的 RETURN 点量坐标，
+ * 量到的已经是最终布局，不需要再事后校正（曾经试过每 tick 校正，反而出问题，已去掉）。
+ * 1.20.x 没有那个方法，init 里的坐标同样就是最终的。
  *
  * <p>定位优先用翻译键（不受语言影响），键对不上再按按钮文字兜底。
  * 注意「鸣谢」的键是 options.credits_and_attribution，不是 options.credits。
@@ -30,6 +29,10 @@ public final class OptionsConfigButton {
 
     private static final String KEY_ACCESSIBILITY = "options.accessibility";
     private static final String KEY_CREDITS = "options.credits_and_attribution";
+
+    /** 判定「这是一个普通按钮而不是布局容器」的尺寸上限。 */
+    private static final int MAX_REF_HEIGHT = 30;
+    private static final int MAX_REF_WIDTH = 320;
 
     private OptionsConfigButton() {
     }
@@ -75,11 +78,11 @@ public final class OptionsConfigButton {
         if (accessibility != null) {
             // 右列、辅助功能正下方那一格
             x = accessibility.getX();
-            w = Math.max(w, accessibility.getWidth());
+            w = Math.max(w, Math.min(accessibility.getWidth(), MAX_REF_WIDTH));
             y = accessibility.getY() + accessibility.getHeight() + 6;
         } else if (credits != null) {
             x = credits.getX() + credits.getWidth() + 4;
-            w = Math.max(w, credits.getWidth());
+            w = Math.max(w, Math.min(credits.getWidth(), MAX_REF_WIDTH));
             y = credits.getY();
         } else {
             x = 8;
@@ -115,7 +118,7 @@ public final class OptionsConfigButton {
     /** 先按翻译键找，找不到再按按钮文字里是否包含 hint（应对键改名或被引擎改写）。 */
     private static ClickableWidget findButton(OptionsScreen screen, String key, String hint) {
         for (Element e : screen.children()) {
-            if (e instanceof ClickableWidget cw) {
+            if (e instanceof ClickableWidget cw && isButtonSized(cw)) {
                 TextContent content = cw.getMessage().getContent();
                 if (content instanceof TranslatableTextContent tt && key.equals(tt.getKey())) {
                     return cw;
@@ -124,11 +127,22 @@ public final class OptionsConfigButton {
         }
         if (hint != null) {
             for (Element e : screen.children()) {
-                if (e instanceof ClickableWidget cw && cw.getMessage().getString().contains(hint)) {
+                if (e instanceof ClickableWidget cw && isButtonSized(cw)
+                        && cw.getMessage().getString().contains(hint)) {
                     return cw;
                 }
             }
         }
         return null;
+    }
+
+    /**
+     * 只认真正的按钮，排除布局容器。
+     *
+     * <p>children() 里除了按钮还可能有 ThreePartsLayoutWidget / GridWidget 这类容器，
+     * 它们的尺寸是整个网格的大小，一旦被当成基准，我们的按钮就会被撑成一片大面板。
+     */
+    private static boolean isButtonSized(ClickableWidget widget) {
+        return widget.getHeight() <= MAX_REF_HEIGHT && widget.getWidth() <= MAX_REF_WIDTH;
     }
 }
