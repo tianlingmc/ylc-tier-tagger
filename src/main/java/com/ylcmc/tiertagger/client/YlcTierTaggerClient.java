@@ -3,9 +3,11 @@ package com.ylcmc.tiertagger.client;
 import com.mojang.brigadier.CommandDispatcher;
 import com.ylcmc.tiertagger.core.TierConfig;
 import com.ylcmc.tiertagger.core.TierService;
+import com.ylcmc.tiertagger.gui.OptionsConfigButton;
 import com.ylcmc.tiertagger.modmenu.ClothConfigBootstrap;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.option.OptionsScreen;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.toast.SystemToast;
 import net.minecraft.text.Text;
@@ -34,6 +36,9 @@ public class YlcTierTaggerClient implements ClientModInitializer {
     /** 上一次已经提示过的状态，用来避免重复刷屏。 */
     private static TierService.Status lastNotified = null;
 
+    /** 手动拉取（/ylctier retrieve）后，下一次出结果时要额外往聊天栏发一条。 */
+    private static boolean announceOnResult = false;
+
     @Override
     public void onInitializeClient() {
         // 可选集成：装了 cloth-config 就注册一份，共用同一个配置文件
@@ -43,9 +48,22 @@ public class YlcTierTaggerClient implements ClientModInitializer {
         SERVICE.bootstrap();
     }
 
+    /**
+     * 标记：下一次同步出结果时，除了右上角提示，也在聊天栏发一条。
+     * 手动执行 /ylctier retrieve 时调用，免得拉完了一点反馈都没有。
+     */
+    public static void announceOnResult() {
+        announceOnResult = true;
+    }
+
     /** 每客户端 tick 调用一次。 */
     public static void onTick(MinecraftClient client) {
         registerCommand(client);
+
+        // 选项页按钮：1.21.x 的最终布局在 init 之后才确定，这里按真实坐标校正，避免漂移
+        if (client.currentScreen instanceof OptionsScreen options) {
+            OptionsConfigButton.reposition(options);
+        }
 
         // 玩家可能在 cloth-config 的界面上改了设置，跟着同步一次
         TierConfig.reloadIfChanged();
@@ -84,13 +102,18 @@ public class YlcTierTaggerClient implements ClientModInitializer {
             return;
         }
 
-        if (status == TierService.Status.IDLE || status == lastNotified) {
+        if (status == TierService.Status.IDLE) {
+            return;
+        }
+        // 手动拉取过就必须给一次回话，哪怕状态和上次相同（否则成功时可能一声不吭）
+        if (status == lastNotified && !announceOnResult) {
             return;
         }
 
         lastNotified = status;
         loadingTicks = 0;
         notifyStatus(client, status);
+        announceOnResult = false;
     }
 
     /**
@@ -130,6 +153,10 @@ public class YlcTierTaggerClient implements ClientModInitializer {
                 String body = "已同步 " + SERVICE.size() + " 名玩家的段位"
                         + (age > 0 ? "（数据来自 " + age + " 分钟前的缓存）" : "");
                 showToast(client, title, body);
+                if (announceOnResult) {
+                    chat(client, Text.literal("[YLCTierTagger] " + body)
+                            .copy().styled(s -> s.withColor(Formatting.GREEN)));
+                }
                 break;
             }
             case FAILED: {

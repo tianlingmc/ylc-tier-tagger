@@ -84,6 +84,8 @@ public class YlcTierCommand {
 
         if ("retrieve".equalsIgnoreCase(head)) {
             boolean started = YlcTierTaggerClient.SERVICE.refreshAsync();
+            // 拉完之后一定给个回话（成功时也会在聊天栏提示，不只是右上角弹一下）
+            YlcTierTaggerClient.announceOnResult();
             reply(Text.literal(started ? "正在重新拉取榜单…" : "正在拉取中，请稍候")
                     .copy().styled(s -> s.withColor(started ? Formatting.YELLOW : Formatting.GRAY)));
             return true;
