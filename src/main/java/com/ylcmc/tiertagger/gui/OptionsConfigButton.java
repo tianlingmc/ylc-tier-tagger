@@ -34,6 +34,16 @@ public final class OptionsConfigButton {
     private static final int MAX_REF_HEIGHT = 30;
     private static final int MAX_REF_WIDTH = 320;
 
+    /**
+     * 按钮宽度的上下限。
+     *
+     * <p>以原版按钮的实际宽度为准（这样一定和网格里的格子一样大，不会伸出去盖到
+     * 旁边的按钮），只在离谱时才夹到这个区间。注意不要设硬性最小宽度——
+     * 原版按钮比它窄的话，我们的按钮反而会比格子宽。
+     */
+    private static final int MIN_WIDTH = 90;
+    private static final int MAX_WIDTH = 220;
+
     private OptionsConfigButton() {
     }
 
@@ -76,18 +86,21 @@ public final class OptionsConfigButton {
         int y;
 
         if (accessibility != null) {
-            // 右列、辅助功能正下方那一格
+            // 右列、辅助功能正下方那一格；宽度直接跟原版按钮一致
             x = accessibility.getX();
-            w = Math.max(w, Math.min(accessibility.getWidth(), MAX_REF_WIDTH));
+            w = clampWidth(accessibility.getWidth());
             y = accessibility.getY() + accessibility.getHeight() + 6;
         } else if (credits != null) {
             x = credits.getX() + credits.getWidth() + 4;
-            w = Math.max(w, Math.min(credits.getWidth(), MAX_REF_WIDTH));
+            w = clampWidth(credits.getWidth());
             y = credits.getY();
         } else {
             x = 8;
             y = screen.height - 28;
         }
+
+        // 右边界：不要超出屏幕
+        w = Math.min(w, Math.max(MIN_WIDTH, screen.width - 16));
 
         // 目标格万一被别的模组占了，沿这一列往下找第一个不重叠的位置
         boolean moved;
@@ -113,6 +126,11 @@ public final class OptionsConfigButton {
         }
 
         mine.setDimensionsAndPosition(x, y, w, h);
+    }
+
+    /** 宽度跟随原版按钮，只在离谱时夹到 [MIN_WIDTH, MAX_WIDTH]。 */
+    private static int clampWidth(int referenceWidth) {
+        return Math.min(Math.max(referenceWidth, MIN_WIDTH), MAX_WIDTH);
     }
 
     /** 先按翻译键找，找不到再按按钮文字里是否包含 hint（应对键改名或被引擎改写）。 */
