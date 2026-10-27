@@ -6,7 +6,7 @@
 
 ## 修复
 
-- 聊天栏段位改为注入「玩家名字段」而非篡改整条消息：原先替换整条消息会丢原版颜色、字体与模板参数；现在 hook MessageType.Parameters.name()（原版拼聊天行时取发送者名字处），只装饰名字本身，消息本体不碰。原先的翻译参数遍历逻辑与「右侧时标签跑到消息后面」的问题一并消失
+- 聊天栏段位仍走消息级注入，但修掉「丢样式」的真正原因：重建消息树用的 copyContentOnly() 只复制内容、不复制 Style，导致原版颜色丢失；现改为 copyContentOnly().setStyle(原样式)。试过的 MessageType.Parameters.name() 名字字段注入不适用：本服聊天由服务端下发拼好的整条消息、不引用 sender 参数，且单人模式会与消息级叠加出现双份段位
 - 选项页设置按钮变成一大片盖住所有原版按钮：ClickableWidget.setDimensionsAndPosition 的参数顺序是 (width, height, x, y)，尺寸在前坐标在后，之前按 (x, y, w, h) 传导致按钮宽高被设成了坐标值；已改为分别调 setDimensions / setX / setY
 - 选项页按钮宽度改为跟随原版按钮（原版 Builder.build() 不指定尺寸，走默认宽高），不再设硬下限；children() 里的 ThreePartsLayoutWidget / GridWidget 等布局容器按尺寸过滤，不会被误当成基准按钮；注入处加了 try/catch 保护
 
