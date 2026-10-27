@@ -1,3 +1,15 @@
+# v1.2.0（2026/10/27）
+
+## 新增
+
+- 无新增功能，本版只修 1.1.0 遗留的问题
+
+## 修复
+
+- 聊天栏的段位改为注入「玩家名字段」，不再篡改整条消息：原先在 `ChatHud.addMessage` 处把整条消息树拆开重建，会丢失原版的颜色、字体以及装饰模板里的其它参数；现在改为 hook `MessageType.Parameters.name()`（原版拼聊天行时取发送者名字的那一处，1.20.4 与 1.21.11 同名同签名），只装饰名字本身，消息本体完全不碰。原先为「普通发言拿不到标签」而写的翻译组件参数遍历逻辑一并删除，「显示在右侧时标签跑到消息后面」的问题也随之消失
+- 选项页设置按钮变成一大片、盖住所有原版按钮：`ClickableWidget.setDimensionsAndPosition` 的参数顺序是 `(width, height, x, y)`（尺寸在前、坐标在后），按 `(x, y, w, h)` 传会把按钮的宽高设成坐标值，于是铺满整个网格。已改为分别调 `setDimensions(w, h)` 与 `setX/setY`
+- 选项页按钮宽度改为跟随原版按钮（原版 `ButtonWidget.Builder.build()` 不指定尺寸，走默认宽高），不再设硬下限，避免比格子宽、压到旁边的按钮；`children()` 里的 `ThreePartsLayoutWidget` / `GridWidget` 等布局容器已按尺寸过滤掉，不会再把容器当成基准按钮；注入处加了 try/catch，失败也不影响原版界面
+
 # v1.1.0（2026/10/25）
 
 ## 新增
@@ -17,12 +29,9 @@
 ## 修复
 
 - 输入 `/ylctier` 提示指令不存在：服务端每次下发命令树（进服、切服、权限刷新）会把客户端的 dispatcher 换成一个新实例，原先只在换网络处理器时才注册一次，指令随后被整个冲掉；改为每 tick 检查根结点，指令缺失就重新注册
-- 聊天栏的段位改为注入「玩家名字段」，不再篡改整条消息：原先在 `ChatHud.addMessage` 处把整条消息树拆开重建，会丢失原版的颜色、字体以及装饰模板里的其它参数；现在改为 hook `MessageType.Parameters.name()`（原版拼聊天行时取发送者名字的那一处，1.20.4 与 1.21.11 同名同签名），只装饰名字本身，消息本体完全不碰。原先为「普通发言拿不到标签」而写的翻译组件参数遍历逻辑一并删除，那个「显示在右侧时标签跑到消息后面」的问题也随之消失
 - 段位显示在右侧时图标被放到段位后面（Tab 列表与头顶名牌），统一改成图标在前
 - 选项页的设置按钮位置不对、掉到了左下角：「鸣谢…」的翻译键是 `options.credits_and_attribution`（不是 `options.credits`），之前按错键找不到目标就走了兜底；改为以「辅助功能…」为基准定位到它正下方那一格，并加上按按钮文字匹配的兜底
 - 所有 `/ylctier` 子命令都返回「未知或不完整的命令」：原版的 `sendChatCommand` 只负责把命令封成包发给服务端（开头的 parse 只为参数签名），**不会执行客户端命令**，而本模组零前置、没有 fabric-api 的客户端命令钩子，于是命令一律被发到服务端。新增 `ClientPlayNetworkHandlerMixin` 在 `sendChatCommand` 处拦截，命中即本地执行并取消发包（该方法的签名在 1.20.4 与 1.21.11 一致）；注册到 dispatcher 的部分保留，仅用于补全提示
-- 选项页设置按钮变成一大片、盖住所有原版按钮：**`ClickableWidget.setDimensionsAndPosition` 的参数顺序是 `(width, height, x, y)`，尺寸在前、坐标在后**，之前按 `(x, y, w, h)` 传，按钮的宽高被设成了坐标值，于是铺满整个网格区域。已改为分别调 `setDimensions(w, h)` 与 `setX/setY`，不再依赖那个容易记反的方法
-- 顺带修正的定位问题：`OptionsScreen.init()` 末尾自己就会调 `refreshWidgetPositions()`，所以 init 结束时坐标已是最终值，定位一次即可；`children()` 里还有 `ThreePartsLayoutWidget` / `GridWidget` 这类容器，已加尺寸校验只认真正的按钮；按钮宽度改为跟随原版按钮的默认值（原版用 `ButtonWidget.Builder.build()` 不指定尺寸），不再设硬下限；注入处加了 try/catch
 
 # v1.0.0（2026/10/25）
 
