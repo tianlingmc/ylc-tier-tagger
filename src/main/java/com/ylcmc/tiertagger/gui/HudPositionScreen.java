@@ -87,7 +87,7 @@ public class HudPositionScreen extends Screen {
         if (entry == null) {
             entry = sample();
         }
-        return TierHudPanel.buildLines(entry, cfg);
+        return TierHudPanel.buildLines(entry, cfg, 12.0);
     }
 
     /** 数据还没到时的占位数据，保证预览能画出来。 */

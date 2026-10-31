@@ -1,3 +1,16 @@
+# v1.3.0 (2026/10/31)
+
+## Added
+
+- The tier HUD now shows the nearest player within 30 blocks, falling back to your own stats when nobody is that close; the first line shows the distance in metres
+- The HUD layout was redone: name and overall rank, region, rank badge with points (and title), an OVERALL line, then every mode tier on its own line with the mode icon, sorted by tier strength
+- Seven rank badges (Combat Grandmaster, Master, Ace, Specialist, Cadet, Novice, Rookie) picked by the point thresholds from the site's `rank_titles`; the icons are taken straight from the site (`card-icons/badge-*.png`, plus `card-icons/points.png` for the points line) and registered as bitmap font glyphs (E709 ~ E710)
+- The HUD position is still draggable in the settings and stored as a fraction of the screen size
+
+## Fixed
+
+- Nothing (the 1.2.0 startup crash was fixed in 1.2.1; this release keeps that `renderStatusBars` injection)
+
 # v1.2.1 (2026/10/31)
 
 ## Added

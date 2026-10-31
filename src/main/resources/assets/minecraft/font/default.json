@@ -20,56 +20,144 @@
       "file": "ylctiertagger:fonts/axe.png",
       "ascent": 8,
       "height": 8,
-      "chars": ["\uE701"]
+      "chars": [
+        ""
+      ]
     },
     {
       "type": "bitmap",
       "file": "ylctiertagger:fonts/mace.png",
       "ascent": 8,
       "height": 8,
-      "chars": ["\uE702"]
+      "chars": [
+        ""
+      ]
     },
     {
       "type": "bitmap",
       "file": "ylctiertagger:fonts/npot.png",
       "ascent": 8,
       "height": 8,
-      "chars": ["\uE703"]
+      "chars": [
+        ""
+      ]
     },
     {
       "type": "bitmap",
       "file": "ylctiertagger:fonts/pot.png",
       "ascent": 8,
       "height": 8,
-      "chars": ["\uE704"]
+      "chars": [
+        ""
+      ]
     },
     {
       "type": "bitmap",
       "file": "ylctiertagger:fonts/smp.png",
       "ascent": 8,
       "height": 8,
-      "chars": ["\uE705"]
+      "chars": [
+        ""
+      ]
     },
     {
       "type": "bitmap",
       "file": "ylctiertagger:fonts/sword.png",
       "ascent": 8,
       "height": 8,
-      "chars": ["\uE706"]
+      "chars": [
+        ""
+      ]
     },
     {
       "type": "bitmap",
       "file": "ylctiertagger:fonts/buhc.png",
       "ascent": 8,
       "height": 8,
-      "chars": ["\uE707"]
+      "chars": [
+        ""
+      ]
     },
     {
       "type": "bitmap",
       "file": "ylctiertagger:fonts/vanilla.png",
       "ascent": 8,
       "height": 8,
-      "chars": ["\uE708"]
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "ylctiertagger:fonts/points.png",
+      "ascent": 8,
+      "height": 8,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "ylctiertagger:fonts/badge_grandmaster.png",
+      "ascent": 8,
+      "height": 8,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "ylctiertagger:fonts/badge_master.png",
+      "ascent": 8,
+      "height": 8,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "ylctiertagger:fonts/badge_ace.png",
+      "ascent": 8,
+      "height": 8,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "ylctiertagger:fonts/badge_spist.png",
+      "ascent": 8,
+      "height": 8,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "ylctiertagger:fonts/badge_cadet.png",
+      "ascent": 8,
+      "height": 8,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "ylctiertagger:fonts/badge_novice.png",
+      "ascent": 8,
+      "height": 8,
+      "chars": [
+        ""
+      ]
+    },
+    {
+      "type": "bitmap",
+      "file": "ylctiertagger:fonts/badge_rookie.png",
+      "ascent": 8,
+      "height": 8,
+      "chars": [
+        ""
+      ]
     }
   ]
 }

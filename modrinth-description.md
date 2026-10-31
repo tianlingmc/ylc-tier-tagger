@@ -11,7 +11,7 @@ the matching mode icon and tier appear next to the player's name.
 |---|---|
 | Nametag | Shown next to the name when you are close to the player |
 | Tab list | Shown in the player list opened with Tab |
-| HUD panel | An always-on panel showing the name, rank, points, region, title and per-mode tiers of the player you are aiming at, or your own stats when you are not aiming at anyone |
+| HUD panel | An always-on panel showing the nearest player within 30 blocks (with the distance), or your own stats when nobody is that close: name and overall rank, region, rank badge with points, and every mode tier on its own line with its icon |
 
 The tier can be placed before or after the name in both the nametag and the tab list.
 
