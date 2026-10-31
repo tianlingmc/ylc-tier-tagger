@@ -6,7 +6,7 @@
 
 ## 修复
 
-- 聊天栏段位仍走消息级注入，但修掉「丢样式」的真正原因：重建消息树用的 copyContentOnly() 只复制内容、不复制 Style，导致原版颜色丢失；现改为 copyContentOnly().setStyle(原样式)。试过的 MessageType.Parameters.name() 名字字段注入不适用：本服聊天由服务端下发拼好的整条消息、不引用 sender 参数，且单人模式会与消息级叠加出现双份段位
+- 移除聊天栏的段位显示：该处需重建整条消息树，容易破坏原版颜色与点击/悬浮事件，且聊天装饰模板由服务端决定（本服直接下发拼好的整条消息、不引用 sender 参数），无法稳定工作。Tab 列表与头顶名牌不受影响，配置页的「聊天栏显示」开关一并去掉
 - 选项页设置按钮变成一大片盖住所有原版按钮：ClickableWidget.setDimensionsAndPosition 的参数顺序是 (width, height, x, y)，尺寸在前坐标在后，之前按 (x, y, w, h) 传导致按钮宽高被设成了坐标值；已改为分别调 setDimensions / setX / setY
 - 选项页按钮宽度改为跟随原版按钮（原版 Builder.build() 不指定尺寸，走默认宽高），不再设硬下限；children() 里的 ThreePartsLayoutWidget / GridWidget 等布局容器按尺寸过滤，不会被误当成基准按钮；注入处加了 try/catch 保护
 

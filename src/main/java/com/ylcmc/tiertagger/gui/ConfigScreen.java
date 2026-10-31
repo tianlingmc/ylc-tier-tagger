@@ -149,9 +149,6 @@ public class ConfigScreen extends Screen {
         list.add(setting("Tab 列表显示",
                 () -> Text.literal(draft.showOnTab ? "开" : "关"),
                 () -> draft.showOnTab = !draft.showOnTab, x, contentW, cur));
-        list.add(setting("聊天栏显示",
-                () -> Text.literal(draft.showInChat ? "开" : "关"),
-                () -> draft.showInChat = !draft.showInChat, x, contentW, cur));
         list.add(setting("显示位置",
                 () -> Text.literal(draft.renderLocation.label),
                 () -> draft.renderLocation = draft.renderLocation == TierConfig.RenderLocation.LEFT
