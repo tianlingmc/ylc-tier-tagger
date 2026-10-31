@@ -9,7 +9,8 @@
 
 ## Fixed
 
-- Nothing (the 1.2.0 startup crash was fixed in 1.2.1; this release keeps that `renderStatusBars` injection)
+- The HUD position screen could not be dragged, and its preview did not match where the HUD actually appears. It read `client.mouse.getX()`, which is in **window pixels** rather than GUI-scaled coordinates, so with any GUI scale other than 1 the position was too large, the hit test never matched, the click was treated as being outside the panel and the panel snapped to a corner. It now uses the `mouseX/mouseY` passed into `render()` (already scaled by vanilla), and the panel size and positioning were moved into `TierHudPanel.boxWidth / boxHeight / position` so the HUD and the drag screen share one calculation - what you drag is exactly where it ends up
+- The 1.2.0 startup crash was fixed in 1.2.1; this release keeps that `renderStatusBars` injection
 
 # v1.2.1 (2026/10/31)
 

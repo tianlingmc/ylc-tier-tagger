@@ -87,19 +87,39 @@ public final class TierHudPanel {
         List<Text> lines = buildLines(entry, cfg, distance);
         TextRenderer textRenderer = client.textRenderer;
 
+        int boxW = boxWidth(textRenderer, lines);
+        int boxH = boxHeight(lines);
+
+        int screenW = client.getWindow().getScaledWidth();
+        int screenH = client.getWindow().getScaledHeight();
+        int[] pos = position(cfg.hudX, cfg.hudY, boxW, boxH, screenW, screenH);
+
+        drawPanel(context, textRenderer, lines, pos[0], pos[1], boxW, boxH, nearest != null);
+    }
+
+    /** 面板宽度：最长一行的宽度加左右内边距。拖拽界面也用它，保证两处尺寸一致。 */
+    public static int boxWidth(TextRenderer textRenderer, List<Text> lines) {
         int textW = 0;
         for (Text line : lines) {
             textW = Math.max(textW, textRenderer.getWidth(line));
         }
-        int boxW = textW + PAD * 2;
-        int boxH = lines.size() * LINE_H + PAD * 2;
+        return textW + PAD * 2;
+    }
 
-        int screenW = client.getWindow().getScaledWidth();
-        int screenH = client.getWindow().getScaledHeight();
-        int x = clamp(Math.round(cfg.hudX * screenW), MARGIN, Math.max(MARGIN, screenW - boxW - MARGIN));
-        int y = clamp(Math.round(cfg.hudY * screenH), MARGIN, Math.max(MARGIN, screenH - boxH - MARGIN));
+    /** 面板高度：行数乘行高加内边距。 */
+    public static int boxHeight(List<Text> lines) {
+        return lines.size() * LINE_H + PAD * 2;
+    }
 
-        drawPanel(context, textRenderer, lines, x, y, boxW, boxH, nearest != null);
+    /**
+     * 按比例算出面板左上角，并夹取在屏幕内。
+     *
+     * <p>HUD 绘制与拖拽界面共用这一个方法，保证「拖拽时看到的位置」就是「实际显示的位置」。
+     */
+    public static int[] position(float hudX, float hudY, int boxW, int boxH, int screenW, int screenH) {
+        int x = clamp(Math.round(hudX * screenW), MARGIN, Math.max(MARGIN, screenW - boxW - MARGIN));
+        int y = clamp(Math.round(hudY * screenH), MARGIN, Math.max(MARGIN, screenH - boxH - MARGIN));
+        return new int[]{x, y};
     }
 
     /** 找 30 米内离自己最近的玩家（不含自己）。 */

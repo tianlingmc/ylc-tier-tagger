@@ -118,7 +118,10 @@ public class HudPositionScreen extends Screen {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
-        handleDrag();
+        layout();
+        // 注意用 render 给的 mouseX/mouseY：它们是原版已经按界面缩放换算好的坐标。
+        // 不要用 client.mouse.getX()，那个是窗口像素，GUI 缩放不是 1 时会整体偏大。
+        handleDrag(mouseX, mouseY);
         layout();
 
         context.drawText(textRenderer, this.title, 24, 12, 0xffffffff, true);
@@ -135,30 +138,23 @@ public class HudPositionScreen extends Screen {
                 24, 40, 0xff9aa0a6, false);
     }
 
-    /** 根据草稿里的比例算出面板矩形。 */
+    /** 根据草稿里的比例算出面板矩形，尺寸与定位都复用 HUD 那边的方法，保证两处一致。 */
     private void layout() {
-        int textW = 0;
-        for (Text line : previewLines) {
-            textW = Math.max(textW, textRenderer.getWidth(line));
-        }
-        panelW = textW + 10;
-        panelH = previewLines.size() * 10 + 10;
-        panelX = Math.round(draft.hudX * this.width);
-        panelY = Math.round(draft.hudY * this.height);
-        panelX = clamp(panelX, 0, Math.max(0, this.width - panelW));
-        panelY = clamp(panelY, 0, Math.max(0, this.height - panelH));
+        panelW = TierHudPanel.boxWidth(textRenderer, previewLines);
+        panelH = TierHudPanel.boxHeight(previewLines);
+        int[] pos = TierHudPanel.position(draft.hudX, draft.hudY, panelW, panelH, this.width, this.height);
+        panelX = pos[0];
+        panelY = pos[1];
     }
 
-    /** 每帧轮询鼠标状态来拖动，绕开两版不同的事件签名。 */
-    private void handleDrag() {
+    /** 每帧轮询左键状态来拖动；鼠标坐标用 render 传进来的（已按界面缩放换算）。 */
+    private void handleDrag(int mx, int my) {
         MinecraftClient client = MinecraftClient.getInstance();
         if (client == null || client.getWindow() == null) {
             return;
         }
         boolean down = GLFW.glfwGetMouseButton(client.getWindow().getHandle(), GLFW.GLFW_MOUSE_BUTTON_LEFT)
                 == GLFW.GLFW_PRESS;
-        int mx = (int) client.mouse.getX();
-        int my = (int) client.mouse.getY();
 
         if (down && !wasDown && !overButton(mx, my)) {
             if (inside(mx, my)) {
