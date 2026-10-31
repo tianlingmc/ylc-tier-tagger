@@ -11,8 +11,9 @@ the matching mode icon and tier appear next to the player's name.
 |---|---|
 | Nametag | Shown next to the name when you are close to the player |
 | Tab list | Shown in the player list opened with Tab |
+| Crosshair | A card next to the crosshair shows the name, rank, points, top modes and title of the player you are aiming at |
 
-The tier can be placed before or after the name in both places.
+The tier can be placed before or after the name in both the nametag and the tab list.
 
 ## Modes and tiers
 
@@ -47,6 +48,7 @@ The colour of each tier can be adjusted in the settings.
 |---|---|
 | Master switch | Turns every tier display on or off |
 | Tab list | Whether the tier is shown in the tab list |
+| Crosshair target | Whether the card appears when your crosshair is on another player |
 | Position | Whether the tier goes before or after the name |
 | Preferred mode | The mode that is preferred |
 | Display rule | Single mode, highest tier only, or prefer the chosen mode |

@@ -2,7 +2,7 @@
 
 ## Added
 
-- No new features; this release only fixes what was left over from 1.1.0
+- Crosshair target card: when your crosshair is on another player, a small card next to the crosshair shows their name, rank, points, their top four modes by tier strength, and their title (such as Combat Ace). It uses the vanilla `crosshairTarget`, so it covers close quarters - about three blocks in survival and five in creative - and it is not drawn while any screen is open. It can be turned off under "Crosshair target" in the settings
 
 ## Fixed
 

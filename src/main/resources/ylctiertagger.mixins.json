@@ -6,6 +6,7 @@
   "client": [
     "ClientPlayNetworkHandlerMixin",
     "GameMenuScreenMixin",
+    "InGameHudMixin",
     "MinecraftClientMixin",
     "OptionsScreenMixin",
     "PlayerEntityMixin",

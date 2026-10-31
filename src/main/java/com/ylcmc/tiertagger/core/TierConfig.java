@@ -32,6 +32,9 @@ public class TierConfig {
     /** 是否在 Tab 玩家列表里显示段位。 */
     public boolean showOnTab = true;
 
+    /** 准星指向玩家时，是否在准星旁显示对方的段位卡。 */
+    public boolean showCrosshairCard = true;
+
     /** 段位显示在名字左边还是右边。 */
     public RenderLocation renderLocation = RenderLocation.LEFT;
 
@@ -134,6 +137,7 @@ public class TierConfig {
     private static void copy(TierConfig s, TierConfig d) {
         d.enabled = s.enabled;
         d.showOnTab = s.showOnTab;
+        d.showCrosshairCard = s.showCrosshairCard;
         d.renderLocation = s.renderLocation;
         d.selectedMode = s.selectedMode;
         d.displayRule = s.displayRule;

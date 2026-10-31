@@ -149,6 +149,9 @@ public class ConfigScreen extends Screen {
         list.add(setting("Tab 列表显示",
                 () -> Text.literal(draft.showOnTab ? "开" : "关"),
                 () -> draft.showOnTab = !draft.showOnTab, x, contentW, cur));
+        list.add(setting("准星目标段位",
+                () -> Text.literal(draft.showCrosshairCard ? "开" : "关"),
+                () -> draft.showCrosshairCard = !draft.showCrosshairCard, x, contentW, cur));
         list.add(setting("显示位置",
                 () -> Text.literal(draft.renderLocation.label),
                 () -> draft.renderLocation = draft.renderLocation == TierConfig.RenderLocation.LEFT
