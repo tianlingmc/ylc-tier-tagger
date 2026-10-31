@@ -12,25 +12,29 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * 在 HUD 上叠加段位面板。
  *
- * <p>为什么挂在 {@code renderStatusBars} 而不是 {@code render}：
- * Mixin 要求处理函数<b>完整</b>声明目标方法的参数、再跟 {@link CallbackInfo}，
- * 不能只取前几个。而 {@code InGameHud.render} 的第二个参数在 1.20.4 是 {@code float}、
- * 1.21.11 是 {@code RenderTickCounter}——签名写死必有一版不匹配，按名字注入虽然能找到方法，
- * 但处理函数照样对不上，会在 apply 阶段抛 {@code InvalidInjectionException}
- * （1.2.0 启动崩溃就是这么来的）。
+ * <p>为什么挂在 {@code renderMountHealth}：
+ * <ul>
+ *   <li>{@code render} 的第二个参数两版不同（{@code float} / {@code RenderTickCounter}），
+ *       而 Mixin 要求处理函数<b>完整</b>声明目标方法的全部参数，不能只取前几个，
+ *       所以不能直接挂 {@code render}。</li>
+ *   <li>{@code renderStatusBars} 虽然两版签名一致，但它是<b>有条件</b>调用的：
+ *       {@code renderMainHud} 里是 {@code if (interactionManager.hasStatusBars())} 才调，
+ *       创造模式与旁观模式下为 false——1.2.0 的「HUD 不显示」就是这个原因。</li>
+ *   <li>{@code renderMountHealth(DrawContext)} 两版同名同签名（私有、单参），且在
+ *       {@code renderMainHud} 里是<b>无条件</b>调用的，所以每帧都会跑到。</li>
+ * </ul>
  *
- * <p>{@code renderStatusBars(DrawContext)} 在两个版本里同名同签名（都是私有、只收一个
- * DrawContext），处理函数写 {@code (DrawContext, CallbackInfo)} 正好匹配。
- * 它在每帧的 HUD 渲染里都会跑到（旁观模式与 F1 隐藏 HUD 时不会，这也符合预期）。
+ * <p>注入点用 {@code HEAD} 而不是 {@code TAIL}：{@code renderMountHealth} 内部有提前返回，
+ * {@code TAIL} 对应方法末尾的 return，提前返回时会被跳过。
  *
- * <p>{@code require = 0}：万一将来签名再变，这里只是不生效，不会让游戏启动崩掉。
+ * <p>{@code require = 0}：将来签名再变也只是面板不显示，不会让游戏启动崩掉。
  *
  * <p>整段包了 try/catch：画面板出任何问题都不能影响原版 HUD。
  */
 @Mixin(InGameHud.class)
 public class InGameHudMixin {
 
-    @Inject(method = "renderStatusBars", at = @At("TAIL"), require = 0)
+    @Inject(method = "renderMountHealth", at = @At("HEAD"), require = 0)
     private void ylcTierTaggerHud(DrawContext context, CallbackInfo ci) {
         try {
             TierHudPanel.render(context, MinecraftClient.getInstance());

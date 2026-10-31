@@ -66,7 +66,15 @@ public class HudPositionScreen extends Screen {
         int by = this.height - 28;
         int startX = this.width / 2 - (w * 2 + gap) / 2;
 
-        addDrawableChild(ButtonWidget.builder(Text.literal("保存"), b -> backToParent())
+        addDrawableChild(ButtonWidget.builder(Text.literal("保存"), b -> {
+                    // 直接写进真实配置并落盘。设置页那边还要再按一次「保存」才生效，
+                    // 很容易让人以为位置没保存成功，所以这里当场生效。
+                    TierConfig real = TierConfig.get();
+                    real.hudX = draft.hudX;
+                    real.hudY = draft.hudY;
+                    real.save();
+                    backToParent();
+                })
                 .dimensions(startX, by, w, h).build());
         addDrawableChild(ButtonWidget.builder(Text.literal("取消"), b -> {
                     draft.hudX = originalX;
@@ -126,7 +134,7 @@ public class HudPositionScreen extends Screen {
 
         context.drawText(textRenderer, this.title, 24, 12, 0xffffffff, true);
         context.drawText(textRenderer,
-                Text.literal("左键按住面板拖动；按在空白处则把面板挪到鼠标位置。位置按屏幕比例保存，点「保存」生效。"),
+                Text.literal("左键按住面板拖动；按在空白处则把面板挪到鼠标位置。位置按屏幕比例保存，点「保存」立即生效。"),
                 24, 28, 0xff9aa0a6, false);
 
         TierHudPanel.drawPanel(context, textRenderer, previewLines, panelX, panelY, panelW, panelH, false);

@@ -13,6 +13,9 @@
 - 选项页按钮宽度改为跟随原版按钮（原版 `ButtonWidget.Builder.build()` 不指定尺寸、走默认宽高），不再设硬下限，避免比格子宽、压到旁边的按钮；`children()` 里的 `ThreePartsLayoutWidget` / `GridWidget` 等布局容器已按尺寸过滤掉，不会再把容器当成基准按钮；注入处加了 try/catch，失败也不影响原版界面
 - 启动即崩：段位 HUD 的注入点写错了。Mixin 要求处理函数**完整**声明目标方法的全部参数再跟 `CallbackInfo`，而 `InGameHud.render` 的第二个参数在 1.20.4 是 `float`、1.21.11 是 `RenderTickCounter`，只取第一个参数会在 apply 阶段抛 `InvalidInjectionException`。改挂到两个版本签名完全一致的 `renderStatusBars(DrawContext)`，并给注入加 `require = 0`——将来签名再变也只是面板不显示，不会崩游戏
 - HUD 位置拖拽界面拖不动、且预览位置与实际显示位置不一致：拖拽读的是 `client.mouse.getX()`，那是**窗口像素**而不是按界面缩放换算后的坐标，GUI 缩放不是 1 时坐标整体偏大，命中判定永远失败、点击被算成屏幕外，面板直接被夹到角落。改用 `render()` 传入的 `mouseX/mouseY`（原版已换算）；同时把面板尺寸与定位抽成 `TierHudPanel.boxWidth / boxHeight / position`，HUD 绘制与拖拽界面共用同一套计算，保证「拖的时候看到的位置」就是「实际显示的位置」
+- 段位 HUD 完全不显示：之前挂在 `renderStatusBars` 上，而它在 `renderMainHud` 里是 `if (interactionManager.hasStatusBars())` 才调用——**创造模式与旁观模式下不会调用**，所以在创造模式里一块面板都看不到。改挂到 `renderMainHud` 里无条件调用的 `renderMountHealth(DrawContext)`（两版同名同签名），注入点用 `HEAD`（该方法内部有提前返回，`TAIL` 会被跳过）
+- 附近 30 米内没人、自己又不在榜单时，HUD 现在会改画一行提示，而不是整个消失——否则没法确认面板是否存在、也没法调位置
+- 拖拽界面的「保存」改为当场写盘生效：原来只写进设置页的草稿，还要再按一次设置页的「保存」才落盘，很容易以为没保存成功
 
 # v1.1.0（2026/10/25）
 

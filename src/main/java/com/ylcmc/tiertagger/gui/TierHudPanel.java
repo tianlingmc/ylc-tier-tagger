@@ -81,20 +81,30 @@ public final class TierHudPanel {
             entry = YlcTierTaggerClient.SERVICE.find(PlayerNames.of(client.player.getGameProfile()));
         }
         if (entry == null) {
+            // 兜底：附近没人、自己又不在榜单里时，画一行提示。
+            // 否则面板会整个消失，玩家没法确认 HUD 是否存在、也没法调位置。
+            List<Text> placeholder = new ArrayList<>();
+            placeholder.add(Text.literal("附近 30 米内没有玩家").copy()
+                    .styled(s -> s.withColor(Formatting.GRAY)));
+            placeholder.add(Text.literal("你也不在榜单中").copy()
+                    .styled(s -> s.withColor(Formatting.DARK_GRAY)));
+            drawAt(context, client, cfg, placeholder, false);
             return;
         }
 
-        List<Text> lines = buildLines(entry, cfg, distance);
-        TextRenderer textRenderer = client.textRenderer;
+        drawAt(context, client, cfg, buildLines(entry, cfg, distance), nearest != null);
+    }
 
+    /** 统一绘制入口：算尺寸、定位、画面板。 */
+    private static void drawAt(DrawContext context, MinecraftClient client, TierConfig cfg,
+                               List<Text> lines, boolean highlight) {
+        TextRenderer textRenderer = client.textRenderer;
         int boxW = boxWidth(textRenderer, lines);
         int boxH = boxHeight(lines);
-
         int screenW = client.getWindow().getScaledWidth();
         int screenH = client.getWindow().getScaledHeight();
         int[] pos = position(cfg.hudX, cfg.hudY, boxW, boxH, screenW, screenH);
-
-        drawPanel(context, textRenderer, lines, pos[0], pos[1], boxW, boxH, nearest != null);
+        drawPanel(context, textRenderer, lines, pos[0], pos[1], boxW, boxH, highlight);
     }
 
     /** 面板宽度：最长一行的宽度加左右内边距。拖拽界面也用它，保证两处尺寸一致。 */
