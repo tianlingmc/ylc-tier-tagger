@@ -149,9 +149,16 @@ public class ConfigScreen extends Screen {
         list.add(setting("Tab 列表显示",
                 () -> Text.literal(draft.showOnTab ? "开" : "关"),
                 () -> draft.showOnTab = !draft.showOnTab, x, contentW, cur));
-        list.add(setting("准星目标段位",
-                () -> Text.literal(draft.showCrosshairCard ? "开" : "关"),
-                () -> draft.showCrosshairCard = !draft.showCrosshairCard, x, contentW, cur));
+        list.add(setting("段位 HUD",
+                () -> Text.literal(draft.showHud ? "开" : "关"),
+                () -> draft.showHud = !draft.showHud, x, contentW, cur));
+        list.add(setting("配置 HUD 位置",
+                () -> Text.literal("打开  ▸"),
+                () -> {
+                    if (client != null) {
+                        client.setScreen(new HudPositionScreen(Text.literal("配置 HUD 位置"), this, draft));
+                    }
+                }, x, contentW, cur));
         list.add(setting("显示位置",
                 () -> Text.literal(draft.renderLocation.label),
                 () -> draft.renderLocation = draft.renderLocation == TierConfig.RenderLocation.LEFT

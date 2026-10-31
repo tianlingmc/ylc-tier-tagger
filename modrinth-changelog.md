@@ -2,7 +2,8 @@
 
 ## Added
 
-- Crosshair target card: when your crosshair is on another player, a small card next to the crosshair shows their name, rank, points, their top four modes by tier strength, and their title (such as Combat Ace). It uses the vanilla `crosshairTarget`, so it covers close quarters - about three blocks in survival and five in creative - and it is not drawn while any screen is open. It can be turned off under "Crosshair target" in the settings
+- Tier HUD panel: an always-on panel showing the name and overall rank, the preferred mode tier and region, per-mode tiers (four per row, sorted by tier strength), points and title. It shows the player your crosshair is on, and your own stats when you are not aiming at anyone, so it is useful all the time; the border turns gold while you are aiming at someone. It is not drawn while any screen is open
+- The HUD position is draggable: the settings screen has a "Configure HUD position" button that opens a drag screen - hold the left button on the panel to move it (press on empty space to snap it there), the percentage coordinates are shown live, and it only takes effect after Save. The position is stored as a fraction of the screen size, so it survives resolution and GUI scale changes. A "Tier HUD" switch turns the whole thing off
 
 ## Fixed
 

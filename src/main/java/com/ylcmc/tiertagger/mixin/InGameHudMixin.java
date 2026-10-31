@@ -1,6 +1,6 @@
 package com.ylcmc.tiertagger.mixin;
 
-import com.ylcmc.tiertagger.gui.CrosshairCard;
+import com.ylcmc.tiertagger.gui.TierHudPanel;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
@@ -24,9 +24,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class InGameHudMixin {
 
     @Inject(method = "render", at = @At("TAIL"))
-    private void ylcTierTaggerCrosshairCard(DrawContext context, CallbackInfo ci) {
+    private void ylcTierTaggerHud(DrawContext context, CallbackInfo ci) {
         try {
-            CrosshairCard.render(context, MinecraftClient.getInstance());
+            TierHudPanel.render(context, MinecraftClient.getInstance());
         } catch (Throwable ignored) {
             // 静默忽略：HUD 装饰不该成为崩溃源
         }
