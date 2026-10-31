@@ -1,39 +1,18 @@
-# v1.3.0 (2026/10/31)
+# v1.2.0 (2026/10/31)
 
 ## Added
 
-- The tier HUD now shows the nearest player within 30 blocks, falling back to your own stats when nobody is that close; the first line shows the distance in metres
-- The HUD layout was redone: name and overall rank, region, rank badge with points (and title), an OVERALL line, then every mode tier on its own line with the mode icon, sorted by tier strength
-- Seven rank badges (Combat Grandmaster, Master, Ace, Specialist, Cadet, Novice, Rookie) picked by the point thresholds from the site's `rank_titles`; the icons are taken straight from the site (`card-icons/badge-*.png`, plus `card-icons/points.png` for the points line) and registered as bitmap font glyphs (E709 ~ E710)
-- The HUD position is still draggable in the settings and stored as a fraction of the screen size
-
-## Fixed
-
-- The HUD position screen could not be dragged, and its preview did not match where the HUD actually appears. It read `client.mouse.getX()`, which is in **window pixels** rather than GUI-scaled coordinates, so with any GUI scale other than 1 the position was too large, the hit test never matched, the click was treated as being outside the panel and the panel snapped to a corner. It now uses the `mouseX/mouseY` passed into `render()` (already scaled by vanilla), and the panel size and positioning were moved into `TierHudPanel.boxWidth / boxHeight / position` so the HUD and the drag screen share one calculation - what you drag is exactly where it ends up
-- The 1.2.0 startup crash was fixed in 1.2.1; this release keeps that `renderStatusBars` injection
-
-# v1.2.1 (2026/10/31)
-
-## Added
-
-- No new features; this release only fixes the startup crash in 1.2.0
-
-## Fixed
-
-- Startup crash (critical in 1.2.0): the tier HUD was hooked at the wrong point. Mixin requires the handler to declare **all** of the target method's parameters before the `CallbackInfo`, and the second parameter of `InGameHud.render` is `float` on 1.20.4 but `RenderTickCounter` on 1.21.11, so taking only the first one throws `InvalidInjectionException` during apply and the game crashes while initialising. It is now hooked on `renderStatusBars(DrawContext)`, whose signature is identical in both versions, and the injection uses `require = 0` so a future signature change only hides the panel instead of crashing
-
-# v1.2.0 (2026/10/27)
-
-## Added
-
-- Tier HUD panel: an always-on panel showing the name and overall rank, the preferred mode tier and region, per-mode tiers (four per row, sorted by tier strength), points and title. It shows the player your crosshair is on, and your own stats when you are not aiming at anyone, so it is useful all the time; the border turns gold while you are aiming at someone. It is not drawn while any screen is open
-- The HUD position is draggable: the settings screen has a "Configure HUD position" button that opens a drag screen - hold the left button on the panel to move it (press on empty space to snap it there), the percentage coordinates are shown live, and it only takes effect after Save. The position is stored as a fraction of the screen size, so it survives resolution and GUI scale changes. A "Tier HUD" switch turns the whole thing off
+- Tier HUD panel: an always-on panel for the nearest player within 30 blocks, with a "current distance: N m" line when there is one, falling back to your own stats otherwise. It shows the name and overall rank, region, rank badge with points (and title), an OVERALL line, then every mode tier - one per line, with the mode icon, sorted by tier strength
+- Seven rank badges (Combat Grandmaster / Master / Ace / Specialist / Cadet / Novice / Rookie) picked by the point thresholds from the site's `rank_titles` (400 / 250 / 100 / 50 / 20 / 10 / 0). The icons are taken straight from the leaderboard site (`card-icons/badge-*.png`, plus `card-icons/points.png` for the points line) and registered as bitmap font glyphs E709 ~ E710
+- The HUD position is draggable: "Configure HUD position" in the settings opens a drag screen - hold the left button on the panel to move it (press on empty space to snap it there), the percentage coordinates are shown live, and it takes effect after Save. The position is stored as a fraction of the screen size, so it survives resolution and GUI scale changes. A "Tier HUD" switch turns the whole thing off
 
 ## Fixed
 
 - Removed the tier from chat. Decorating a chat line requires rebuilding the whole message tree, which easily breaks vanilla colours and click/hover events, and the decoration template is decided by the server (this server sends an already composed message and never references the `sender` parameter), so it cannot work reliably. The tab list and the nametag are unaffected, and the "chat" toggle has been dropped from the settings screen
 - The options-screen button could be blown up into one huge panel covering every vanilla button: `ClickableWidget.setDimensionsAndPosition` takes `(width, height, x, y)` - dimensions first - so passing `(x, y, w, h)` set the width and height to the coordinate values. It now calls `setDimensions(w, h)`, `setX` and `setY` separately
-- The options-screen button now follows the width of the vanilla buttons (vanilla builds them via `ButtonWidget.Builder.build()` with no explicit size, so they use the default width and height) and no longer has a hard minimum, so it cannot grow wider than its cell; layout containers such as `ThreePartsLayoutWidget` / `GridWidget` are filtered out by size so they are never mistaken for a reference button; the injection is wrapped in try/catch so a failure cannot break the vanilla screen
+- The options-screen button now follows the width of the vanilla buttons (vanilla builds them via `ButtonWidget.Builder.build()` with no explicit size) and no longer has a hard minimum, so it cannot grow wider than its cell; layout containers such as `ThreePartsLayoutWidget` / `GridWidget` are filtered out by size; the injection is wrapped in try/catch
+- Startup crash: the tier HUD was hooked at the wrong point. Mixin requires the handler to declare all of the target method's parameters before the `CallbackInfo`, and the second parameter of `InGameHud.render` is `float` on 1.20.4 but `RenderTickCounter` on 1.21.11, so taking only the first one throws `InvalidInjectionException` during apply. It is now hooked on `renderStatusBars(DrawContext)`, whose signature is identical in both versions, and the injection uses `require = 0` so a future signature change only hides the panel instead of crashing
+- The HUD position screen could not be dragged and its preview did not match where the HUD actually appears. It read `client.mouse.getX()`, which is in window pixels rather than GUI-scaled coordinates, so the hit test never matched and the panel snapped to a corner. It now uses the `mouseX/mouseY` passed into `render()`, and the panel size and positioning were moved into `TierHudPanel.boxWidth / boxHeight / position` so the HUD and the drag screen share one calculation
 
 # v1.1.0 (2026/10/25)
 
