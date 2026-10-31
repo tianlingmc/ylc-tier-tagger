@@ -1,61 +1,51 @@
-# v1.2.0（2026/10/27）
+# v1.2.0 (2026/10/27)
 
-## 新增
+## Added
 
-- 无新增功能，本版只修 1.1.0 遗留的问题
+- No new features; this release only fixes what was left over from 1.1.0
 
-## 修复
+## Fixed
 
-- 移除聊天栏的段位显示：该处需重建整条消息树，容易破坏原版颜色与点击/悬浮事件，且聊天装饰模板由服务端决定（本服直接下发拼好的整条消息、不引用 sender 参数），无法稳定工作。Tab 列表与头顶名牌不受影响，配置页的「聊天栏显示」开关一并去掉
-- 选项页设置按钮变成一大片盖住所有原版按钮：ClickableWidget.setDimensionsAndPosition 的参数顺序是 (width, height, x, y)，尺寸在前坐标在后，之前按 (x, y, w, h) 传导致按钮宽高被设成了坐标值；已改为分别调 setDimensions / setX / setY
-- 选项页按钮宽度改为跟随原版按钮（原版 Builder.build() 不指定尺寸，走默认宽高），不再设硬下限；children() 里的 ThreePartsLayoutWidget / GridWidget 等布局容器按尺寸过滤，不会被误当成基准按钮；注入处加了 try/catch 保护
+- Removed the tier from chat. Decorating a chat line requires rebuilding the whole message tree, which easily breaks vanilla colours and click/hover events, and the decoration template is decided by the server (this server sends an already composed message and never references the `sender` parameter), so it cannot work reliably. The tab list and the nametag are unaffected, and the "chat" toggle has been dropped from the settings screen
+- The options-screen button could be blown up into one huge panel covering every vanilla button: `ClickableWidget.setDimensionsAndPosition` takes `(width, height, x, y)` - dimensions first - so passing `(x, y, w, h)` set the width and height to the coordinate values. It now calls `setDimensions(w, h)`, `setX` and `setY` separately
+- The options-screen button now follows the width of the vanilla buttons (vanilla builds them via `ButtonWidget.Builder.build()` with no explicit size, so they use the default width and height) and no longer has a hard minimum, so it cannot grow wider than its cell; layout containers such as `ThreePartsLayoutWidget` / `GridWidget` are filtered out by size so they are never mistaken for a reference button; the injection is wrapped in try/catch so a failure cannot break the vanilla screen
 
-# v1.1.0（2026/10/25）
+# v1.1.0 (2026/10/25)
 
-## 新增
+## Added
 
-- `/ylctier config` 打开设置界面
-- `/ylctier retrieve` 重新拉取榜单数据
-- `/ylctier reload` 重载模组配置
-- `/ylctier` 不带参数时显示用法说明
-- 段位颜色改为在独立的颜色选择页里挑选（色板铺成网格，显示色块与十六进制值，当前值有描边），取代原来的点击轮换
-- 段位与玩家名之间统一用「 | 」分隔、图标统一在段位前：左侧「[图标] 段位 | 名字」，右侧「名字 | [图标] 段位」，聊天栏 / Tab 列表 / 头顶名牌三处一致
-- 设置入口统一改名为「YLCTierTagger 配置」，选项页按钮改放到「鸣谢…」右边、「辅助功能…」下边
-- 配置页（含颜色选择页、模式选择页）按 ESC 退回上一级界面，而不是整个关掉
-- /ylctier 不带参数时输出多行帮助：「- - - - - [ YLCTierTagger Help ] - - - - -」标题 + 每行「/指令 - 介绍」
-- /ylctier retrieve 拉取完成后在聊天栏发一条结果提示（成功或失败都有），不再只有右上角弹窗
+- `/ylctier config` opens the settings screen, `/ylctier retrieve` fetches the leaderboard again, `/ylctier reload` reloads the mod config, and `/ylctier` without arguments lists every subcommand
+- Tier colours are picked on a dedicated colour page: the palette is laid out as a grid, each cell shows the swatch plus its hex value, the current value is outlined, and one click selects it and returns (replacing the old click-to-cycle behaviour)
+- A single `" | "` separator between the tier and the player name, with the icon always in front of the tier: `[icon] tier | name` on the left, `name | [icon] tier` on the right
+- The settings entry is now called "YLCTierTagger 配置" everywhere (options screen, ESC pause menu, ModMenu), and the options-screen button sits to the right of "Credits & Attribution" and below "Accessibility Settings"
+- ESC on the settings screen, the colour page and the mode page returns to the previous screen instead of closing the screen entirely
+- `/ylctier retrieve` posts its result to chat (success or failure) instead of relying only on a toast
 
-## 修复
+## Fixed
 
-- 输入 `/ylctier` 提示指令不存在：服务端下发命令树会把客户端 dispatcher 换成新实例，原先只在换网络处理器时注册一次，指令随后被冲掉；改为检查根结点，缺失就重新注册
-- 段位显示在右侧时图标被放到段位后面，现已统一为图标在前
-- 选项页设置按钮位置不对掉到左下角：「鸣谢…」的键是 options.credits_and_attribution（不是 options.credits），按错键导致找不到目标走兜底；现以「辅助功能…」为基准定位到其正下方一格
-- 所有 /ylctier 子命令都返回「未知或不完整的命令」：原版 sendChatCommand 只把命令封包发给服务端、不执行客户端命令，而本模组零前置没有 fabric-api 的客户端命令钩子；新增拦截在 sendChatCommand 处命中即本地执行并取消发包
+- `/ylctier` reported "unknown or incomplete command": the client dispatcher is replaced every time the server sends a command tree, and the command was only registered when the network handler changed, so it was wiped right after; it is now re-registered whenever the root node is missing
+- When the tier was shown on the right, the icon ended up behind the tier in the tab list and on the nametag; the icon is now always in front
+- The options-screen button was misplaced and fell back to the bottom-left corner (the key for "Credits & Attribution" is `options.credits_and_attribution`, not `options.credits`); it is now positioned one row below "Accessibility Settings", with a text-based fallback
+- Every `/ylctier` subcommand returned "unknown or incomplete command": vanilla `sendChatCommand` only sends the command to the server and never executes client commands, and with no dependencies there is no Fabric API client-command hook; `ClientPlayNetworkHandlerMixin` now intercepts `sendChatCommand`, runs matching commands locally and cancels the packet
 
-# v1.0.0（2026/10/25）
+# v1.0.0 (2026/10/25)
 
-## 新增
+## Added
 
-- 头顶名牌、Tab 玩家列表、聊天栏三处显示段位
-- 聊天栏的段位可选择显示在名字前或名字后
-- 八个模式各有对应图标，段位分 HT1 ~ HT5 与 LT1 ~ LT5
-- 每个段位的颜色都可以在设置页调整
-- 设置页三个入口：游戏内 `/ylctier` 命令、ESC 暂停菜单「模组」按钮下方的「PVPTIER 设置」按钮、ModMenu 模组列表的「配置」按钮
-- 设置页改动先写内存草稿，只有点「保存」才落盘，另有「取消」与「恢复默认」
-- 可切换优先模式、显示规则与显示位置
-- 榜单每次启动自动后台同步一次，失败时说明原因、是否沿用本地数据，并给出手动重试入口
-- 同时提供 1.20.5 ~ 1.21.11（Java 21）与 1.20.1 ~ 1.20.4（Java 17）两个版本
-- 零前置，ModMenu 与 Cloth Config 为可选依赖
+- Tier shown on the nametag, in the tab list and in chat, with the chat position configurable
+- Every mode has its own icon; tiers are HT1 ~ HT5 and LT1 ~ LT5, and the colour of each tier can be adjusted
+- Settings screen reachable from `/ylctier`, the ESC pause menu and ModMenu; it edits an in-memory draft and only writes on "Save", with "Cancel" and "Reset to defaults" available
+- Preferred mode, display rule and display position can be switched
+- The leaderboard syncs once in the background at every start; on failure the reason, whether cached data is used and a manual retry hint are shown
+- Two builds: 1.20.5 ~ 1.21.11 (Java 21) and 1.20.1 ~ 1.20.4 (Java 17); no dependencies, ModMenu and Cloth Config are optional
 
-## 修复
+## Fixed
 
-- 聊天栏普通发言拿不到段位标签（名字在翻译组件的参数里，原先的查找方式扫不到）
-- 聊天栏段位装饰导致启动崩溃
-- 1.21.x 上因修改不可变消息列表被「协议错误」踢出
-- 1.20.1 ~ 1.20.4（Java 17）构建启动即崩
-- 设置页所有文字不可见（颜色缺 alpha 通道导致全透明）
-- 段位文字与色块可能全透明
-- 设置页滚动改为原生风格滚动条并支持滚轮，去掉上下箭头按钮
-- 段位 LT5 与 LT4 默认颜色重复
-- `fabric.mod.json` 描述转义错误与版本范围说明写错
-- 榜单接口偶发返回非 JSON 时的解析失败（重试 3 次并回退本地缓存）
+- Chat messages typed by players got no tier (the name lives in the translatable arguments, not in the siblings)
+- A startup crash caused by decorating chat, and a "protocol error" kick on 1.21.x after mutating the immutable `siblings` list
+- The 1.20.1 ~ 1.20.4 (Java 17) build crashed at startup because of a wrong mixin `compatibilityLevel`
+- No text at all in the settings screen, plus fully transparent tier text and swatches (colours were written without an alpha channel)
+- Scrolling in the settings screen now uses a native-style scrollbar with mouse-wheel support
+- LT5 and LT4 shared the same default colour
+- A bad escape in the `fabric.mod.json` description and a wrong supported-version note
+- Parsing failures when the leaderboard API returns non-JSON (three retries plus a local-cache fallback)
