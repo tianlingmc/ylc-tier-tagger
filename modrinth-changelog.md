@@ -1,3 +1,13 @@
+# v1.2.1 (2026/10/31)
+
+## Added
+
+- No new features; this release only fixes the startup crash in 1.2.0
+
+## Fixed
+
+- Startup crash (critical in 1.2.0): the tier HUD was hooked at the wrong point. Mixin requires the handler to declare **all** of the target method's parameters before the `CallbackInfo`, and the second parameter of `InGameHud.render` is `float` on 1.20.4 but `RenderTickCounter` on 1.21.11, so taking only the first one throws `InvalidInjectionException` during apply and the game crashes while initialising. It is now hooked on `renderStatusBars(DrawContext)`, whose signature is identical in both versions, and the injection uses `require = 0` so a future signature change only hides the panel instead of crashing
+
 # v1.2.0 (2026/10/27)
 
 ## Added

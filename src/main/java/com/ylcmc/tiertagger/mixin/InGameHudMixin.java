@@ -10,20 +10,27 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 /**
- * 在 HUD 最后画一层「准星目标段位卡」。
+ * 在 HUD 上叠加段位面板。
  *
- * <p>注入点只写方法名 {@code render}、不写描述符：{@code InGameHud.render} 的第二个
- * 参数在 1.20.4 是 {@code float}、1.21.11 换成了 {@code RenderTickCounter}，
- * 写死描述符会导致其中一个版本注入失败；只按名字匹配则两版都能命中。
- * 处理函数的第一个参数按位置对上 {@link DrawContext}（两版都是第一个参数），
- * 后面跟 {@link CallbackInfo}，后面那些版本相关的参数不取就行。
+ * <p>为什么挂在 {@code renderStatusBars} 而不是 {@code render}：
+ * Mixin 要求处理函数<b>完整</b>声明目标方法的参数、再跟 {@link CallbackInfo}，
+ * 不能只取前几个。而 {@code InGameHud.render} 的第二个参数在 1.20.4 是 {@code float}、
+ * 1.21.11 是 {@code RenderTickCounter}——签名写死必有一版不匹配，按名字注入虽然能找到方法，
+ * 但处理函数照样对不上，会在 apply 阶段抛 {@code InvalidInjectionException}
+ * （1.2.0 启动崩溃就是这么来的）。
  *
- * <p>整段包了 try/catch：画卡片出任何问题都不能影响原版 HUD。
+ * <p>{@code renderStatusBars(DrawContext)} 在两个版本里同名同签名（都是私有、只收一个
+ * DrawContext），处理函数写 {@code (DrawContext, CallbackInfo)} 正好匹配。
+ * 它在每帧的 HUD 渲染里都会跑到（旁观模式与 F1 隐藏 HUD 时不会，这也符合预期）。
+ *
+ * <p>{@code require = 0}：万一将来签名再变，这里只是不生效，不会让游戏启动崩掉。
+ *
+ * <p>整段包了 try/catch：画面板出任何问题都不能影响原版 HUD。
  */
 @Mixin(InGameHud.class)
 public class InGameHudMixin {
 
-    @Inject(method = "render", at = @At("TAIL"))
+    @Inject(method = "renderStatusBars", at = @At("TAIL"), require = 0)
     private void ylcTierTaggerHud(DrawContext context, CallbackInfo ci) {
         try {
             TierHudPanel.render(context, MinecraftClient.getInstance());

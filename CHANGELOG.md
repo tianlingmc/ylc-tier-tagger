@@ -1,3 +1,13 @@
+# v1.2.1（2026/10/31）
+
+## 新增
+
+- 无新增功能，本版只修 1.2.0 的启动崩溃
+
+## 修复
+
+- 启动即崩（1.2.0 的严重问题）：段位 HUD 的注入点写错了。Mixin 要求处理函数**完整**声明目标方法的全部参数再跟 `CallbackInfo`，而 `InGameHud.render` 的第二个参数在 1.20.4 是 `float`、1.21.11 是 `RenderTickCounter`，只取第一个参数会在 apply 阶段抛 `InvalidInjectionException`，游戏在「初始化游戏」阶段直接崩。改挂到两个版本签名完全一致的 `renderStatusBars(DrawContext)`，并给注入加 `require = 0`——将来签名再变也只是面板不显示，不会崩游戏
+
 # v1.2.0（2026/10/27）
 
 ## 新增
